@@ -1,0 +1,18 @@
+<div class="box mt-5">
+  <div class="my-2 w-25">
+  <!-- bass data from child to parent (recieve data)         how filter work ==> take data as Parameter and go to service to concatination with api  witch i work on it  -->
+   <app-select [data]="categorise"[title]="'categorise'" (selectedValue) ="filtterCategory($event)"></app-select>
+  </div>
+    <div class="row" *ngIf="!loading">
+        <div *ngFor ="let product of products"   class="col-md-3 col-sm-12">
+          <app-product [data]="product" (item)="addtoCart($event)"></app-product>
+        </div>
+    
+    </div>
+
+<div class="text-center w-100" *ngIf="loading">
+    <app-spinner></app-spinner>
+</div>
+
+
+</div>
