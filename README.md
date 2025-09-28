@@ -1,33 +1,74 @@
-# yarn start to start the react client #
+# 🛒 Market – E-Commerce Web Application
 
-# the design implemented: *figma*
+**Market** is a modern and responsive e-commerce web application built with **Angular**. It provides a seamless shopping experience with features like product listing, detailed product pages, and a dynamic shopping cart.
 
-# Functionality
+---
 
+## 🌟 Key Features / Functionality
 
-* PLP - product listing page, a.k.a. category page
-* PDP - product description page, a.k.a. product page
-* Cart page + Cart overlay (minicart)
+- ✅ **PLP** – Product Listing Page (category page)  
+- ✅ **PDP** – Product Description Page (product page)  
+- ✅ **Cart Page + Cart Overlay** – Add/remove products and adjust quantities quickly  
+- ✅ Ability to change **store currency** to any available option  
+- ✅ Responsive Design – Optimized for desktop and mobile devices  
 
+---
 
+## 🛠️ Design
 
-# Details
+- The design is implemented based on **Figma prototypes**  
 
-* Ability to add/remove products and change their amounts in cart - on the cart page itself, PLP and PDP should be provided.
-* For products that have various options (attributes) - the options should be selected.
-* The selected options of added to cart products should be visible in cart overlay and in cart page.
-* The descriptions provided in HTML format should be parsed and presented as HTML, not as plain text
-* Ability to change the currency of the store to one of the available currencies
+---
 
-# App
+## 📂 Details
 
-* This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 16.1.4.
+- Ability to add/remove products and change amounts in the **cart** (Cart Page, PLP, and PDP)  
+- Products with multiple options (attributes) can have selectable options  
+- Selected options of products are visible in the **cart overlay** and on the **cart page**  
+- Product descriptions provided in HTML format are rendered as HTML, not plain text  
 
-## Development server
+---
 
-* Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+## 🛠️ Technologies Used
 
-## Running unit tests
+- **Angular CLI** – Front-end framework  
+- **TypeScript** – Programming language  
+- **HTML5** – Structuring the content  
+- **CSS3** – Styling and layout  
+- **Figma** – Design prototypes  
+
+---
+
+## 📥 How to Run / Development Server
+
+1. **Clone the repository:**  
+
+```bash
+git clone https://github.com/SamirNexus/Market.git
+Install dependencies:
+
+bash
+Copy code
+cd Market
+npm install
+Start Angular dev server:
+
+bash
+Copy code
+yarn start
+Navigate to http://localhost:4200/
+
+The application will automatically reload if you change any source files
+
+🧪 Running Unit Tests
+Use Angular CLI commands to run unit tests:
+
+bash
+Copy code
+ng test
+🚀 Author
+SamirNexus – Software Engineer & Web Developer
+GitHub: https://github.com/SamirNexu
 
 * Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
 
