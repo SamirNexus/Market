@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { CartItem, Product } from '../../products/models/product';
 
 @Injectable({
@@ -52,7 +53,7 @@ export class CartsService {
   }
 
   createOrder(model: unknown) {
-    return this.http.post('https://fakestoreapi.com/carts', model);
+    return this.http.post(`${environment.apiBaseUrl}/carts`, model);
   }
 
   private save(cart: CartItem[]): void {

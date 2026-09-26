@@ -1,24 +1,16 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import type { AdminCart } from '@market/contracts/cart';
+import { environment } from '../../../environments/environment';
 
-export interface CartProductLine {
-  productId: number;
-  quantity: number;
-}
-
-export interface AdminCart {
-  id: number;
-  userId: number;
-  date: string;
-  products: CartProductLine[];
-}
+export type { AdminCart, CartProductLine } from '@market/contracts/cart';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CartsService {
-  private readonly baseUrl = 'https://fakestoreapi.com/carts';
+  private readonly baseUrl = `${environment.apiBaseUrl}/carts`;
 
   constructor(private http: HttpClient) {}
 
