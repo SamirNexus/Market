@@ -9,13 +9,15 @@ describe('AllProductsComponent', () => {
   let service: jasmine.SpyObj<ProductsService>;
 
   const product: Product = {
-    id: 1,
+    id: 'product-1',
     title: 'Camera',
+    slug: 'camera',
+    sku: 'CAM-001',
+    stock: 5,
     price: 100,
     description: 'Test product',
     category: 'electronics',
-    image: 'camera.jpg',
-    rating: { rate: 4.5, count: 12 },
+    image: 'https://example.com/camera.jpg',
   };
 
   beforeEach(() => {
@@ -29,9 +31,9 @@ describe('AllProductsComponent', () => {
 
     service.getAllProducts.and.returnValue(of([product]));
     service.getAllCategories.and.returnValue(of(['electronics']));
-    service.createProduct.and.returnValue(of({ ...product, id: 2 }));
+    service.createProduct.and.returnValue(of({ ...product, id: 'product-2' }));
     service.updateProduct.and.returnValue(of(product));
-    service.deleteProduct.and.returnValue(of(product));
+    service.deleteProduct.and.returnValue(of({ ...product, status: 'ARCHIVED' }));
 
     component = new AllProductsComponent(service, new FormBuilder());
     component.ngOnInit();
@@ -49,8 +51,14 @@ describe('AllProductsComponent', () => {
 
     expect(component.editingProductId).toBeNull();
     expect(service.updateProduct).toHaveBeenCalledWith(
-      1,
-      jasmine.objectContaining({ title: 'Camera', category: 'electronics' }),
+      'product-1',
+      jasmine.objectContaining({
+        title: 'Camera',
+        slug: 'camera',
+        sku: 'CAM-001',
+        stock: 5,
+        category: 'electronics',
+      }),
     );
     expect(component.feedbackMessage).toContain('updated');
   });
@@ -59,24 +67,34 @@ describe('AllProductsComponent', () => {
     component.beginCreate();
     component.form.setValue({
       title: 'Doorbell',
+      slug: 'doorbell',
+      sku: 'DOOR-001',
       price: 80,
+      stock: 8,
       description: 'Smart doorbell',
-      image: 'doorbell.jpg',
+      image: 'https://example.com/doorbell.jpg',
       category: 'electronics',
     });
 
     component.saveProduct();
 
-    expect(service.createProduct).toHaveBeenCalled();
-    expect(component.products[0].title).toBe('Doorbell');
+    expect(service.createProduct).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        slug: 'doorbell',
+        sku: 'DOOR-001',
+        stock: 8,
+      }),
+    );
+    expect(component.products[0].title).toBe('Camera');
     expect(component.feedbackMessage).toContain('created');
   });
 
-  it('removes a deleted product from the current view', () => {
+  it('archives a removed product from the current view', () => {
     component.deleteProduct(product);
 
-    expect(service.deleteProduct).toHaveBeenCalledWith(1);
+    expect(service.deleteProduct).toHaveBeenCalledWith('product-1');
     expect(component.products).toEqual([]);
+    expect(component.feedbackMessage).toContain('archived');
   });
 
   it('surfaces catalog loading errors', () => {
