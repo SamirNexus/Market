@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "install:all": "npm ci --prefix apps/storefront && npm ci --prefix apps/admin",
-    "install:api": "npm install --prefix apps/api",
+    "install:api": "npm ci --prefix apps/api",
     "start:storefront": "npm --prefix apps/storefront start",
     "start:admin": "npm --prefix apps/admin start",
     "start:api": "npm --prefix apps/api run start:dev",
