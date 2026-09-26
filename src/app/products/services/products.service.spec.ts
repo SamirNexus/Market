@@ -53,7 +53,7 @@ describe('ProductsService', () => {
     service.getProductsInCategory("men's clothing").subscribe();
 
     const request = httpController.expectOne(
-      'https://fakestoreapi.com/products/category/men%27s%20clothing',
+      "https://fakestoreapi.com/products/category/men's%20clothing",
     );
     expect(request.request.method).toBe('GET');
     request.flush([product]);
