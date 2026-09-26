@@ -3,14 +3,21 @@ export interface ProductRating {
   count: number;
 }
 
-export interface Product {
+export interface ProductBase {
   id: number;
   title: string;
   price: number;
   description: string;
   category: string;
   image: string;
+}
+
+export interface Product extends ProductBase {
   rating?: ProductRating;
 }
 
-export type ProductInput = Omit<Product, 'id' | 'rating'>;
+export interface StorefrontProduct extends ProductBase {
+  rating: ProductRating;
+}
+
+export type ProductInput = Omit<ProductBase, 'id'>;
