@@ -1,21 +1,29 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { ProductComponent } from './product.component';
+import { Product } from '../../models/product';
 
 describe('ProductComponent', () => {
-  let component: ProductComponent;
-  let fixture: ComponentFixture<ProductComponent>;
+  const product: Product = {
+    id: 1,
+    title: 'Test product',
+    price: 99,
+    category: 'test',
+    description: 'Test description',
+    image: 'product.jpg',
+    rating: { rate: 4.5, count: 10 },
+  };
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      declarations: [ProductComponent]
-    });
-    fixture = TestBed.createComponent(ProductComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+  it('emits the selected product and a normalized quantity', () => {
+    const component = new ProductComponent();
+    component.data = product;
+    component.amount = 0;
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+    const emitted: Array<{ item: Product; quantity: number }> = [];
+    component.item.subscribe((value) => emitted.push(value));
+
+    component.add();
+
+    expect(emitted).toEqual([{ item: product, quantity: 1 }]);
+    expect(component.amount).toBe(1);
+    expect(component.selectingQuantity).toBeFalse();
   });
 });
