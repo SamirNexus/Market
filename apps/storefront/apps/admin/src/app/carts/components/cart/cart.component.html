@@ -1,0 +1,115 @@
+<div class="cartBox">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h2 class="h4 mb-1">Cart operations</h2>
+      <p class="text-muted mb-0">Inspect carts, filter by date, and remove demo records.</p>
+    </div>
+  </div>
+
+  <form [formGroup]="form" class="mb-4">
+    <div class="row">
+      <div class="col-md-3">
+        <label for="cart-start-date">Start date</label>
+        <input id="cart-start-date" type="date" formControlName="start" class="form-control">
+      </div>
+
+      <div class="col-md-3">
+        <label for="cart-end-date">End date</label>
+        <input id="cart-end-date" type="date" formControlName="end" class="form-control">
+      </div>
+
+      <div class="col-md-4 d-flex align-items-end">
+        <button type="button" class="btn btn-success mr-2" (click)="applyFilter()">Apply</button>
+        <button type="button" class="btn btn-outline-secondary" (click)="clearFilter()">Clear</button>
+      </div>
+    </div>
+  </form>
+
+  <div class="alert alert-danger" *ngIf="errorMessage">
+    {{ errorMessage }}
+    <button type="button" class="btn btn-sm btn-outline-danger ml-2" (click)="getAllCarts()">Retry</button>
+  </div>
+
+  <div class="alert alert-info" role="status" *ngIf="feedbackMessage">
+    {{ feedbackMessage }}
+  </div>
+
+  <app-spinner *ngIf="loading"></app-spinner>
+
+  <div class="table-responsive" *ngIf="!loading && !errorMessage">
+    <table class="table table-striped">
+      <thead>
+        <tr class="text-center">
+          <th scope="col">Cart ID</th>
+          <th scope="col">Date</th>
+          <th scope="col">Lines</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of carts; let index = index">
+          <td>{{ item.id }}</td>
+          <td>{{ item.date | date:'longDate' }}</td>
+          <td>{{ item.products.length }}</td>
+          <td>
+            <button type="button" class="btn btn-outline-danger btn-sm mx-2" (click)="deleteCart(item.id)">
+              Delete
+            </button>
+            <button
+              type="button"
+              data-toggle="modal"
+              class="btn btn-primary btn-sm"
+              data-target="#cartDetailsModal"
+              (click)="view(index)">
+              View
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="text-muted" *ngIf="!loading && !errorMessage && carts.length === 0">
+    No carts match the current filter.
+  </p>
+</div>
+
+<div class="modal fade" id="cartDetailsModal" tabindex="-1" aria-labelledby="cartDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 900px!important;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="cartDetailsModalLabel">Cart details</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <app-spinner *ngIf="detailLoading"></app-spinner>
+
+        <div class="table-responsive" *ngIf="!detailLoading">
+          <table class="table table-striped">
+            <thead>
+              <tr class="text-center">
+                <th scope="col">Image</th>
+                <th scope="col">Name</th>
+                <th scope="col">Price</th>
+                <th scope="col">Quantity</th>
+                <th scope="col">Line total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of products">
+                <td><img [src]="item.item.image" [alt]="item.item.title"></td>
+                <td>{{ item.item.title }}</td>
+                <td>{{ item.item.price | currency:'USD' }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.item.price * item.quantity | currency:'USD' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

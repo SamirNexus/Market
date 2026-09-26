@@ -1,0 +1,14 @@
+{
+  "name": "market-commerce-suite",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install:all": "npm ci --prefix apps/storefront && npm ci --prefix apps/admin",
+    "start:storefront": "npm --prefix apps/storefront start",
+    "start:admin": "npm --prefix apps/admin start",
+    "build": "npm run build:storefront && npm run build:admin",
+    "build:storefront": "npm --prefix apps/storefront run build",
+    "build:admin": "npm --prefix apps/admin run build",
+    "test:storefront": "npm --prefix apps/storefront run test:ci"
+  }
+}

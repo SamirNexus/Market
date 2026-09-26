@@ -1,0 +1,13 @@
+<label [for]="controlId" class="my-1">{{ title }}:</label>
+<select
+  [id]="controlId"
+  class="form-control"
+  (change)="detectChanges($event)">
+  <option value="All" *ngIf="all">All</option>
+  <option
+    *ngFor="let option of data"
+    [value]="option"
+    [selected]="option === select">
+    {{ option }}
+  </option>
+</select>

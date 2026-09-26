@@ -1,128 +1,109 @@
-# Market — Angular E-Commerce Front End
+# Market Commerce Suite
 
-[![CI](https://github.com/SamirNexus/Market/actions/workflows/ci.yml/badge.svg)](https://github.com/SamirNexus/Market/actions/workflows/ci.yml)
-[![Angular](https://img.shields.io/badge/Angular-16-DD0031?logo=angular&logoColor=white)](https://angular.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Commerce Suite CI](https://github.com/SamirNexus/Market/actions/workflows/ci.yml/badge.svg)](https://github.com/SamirNexus/Market/actions/workflows/ci.yml)
 
-**Live demo:** https://market-two-rosy.vercel.app
+Market is being consolidated into a single commerce product repository with two Angular applications:
 
-Market is a responsive Angular e-commerce interface that demonstrates modern front-end architecture. It fetches real product data from the Fake Store API, integrating API requests, client-side search and sorting, API-driven category filtering, cart persistence, and responsive design.
+- **Storefront** — customer-facing catalog, product details, cart state, and demo checkout.
+- **Admin** — operations interface for product catalog and cart/order inspection.
 
-## Core features
+**Storefront demo:** https://market-two-rosy.vercel.app  
+**Legacy admin demo:** https://market-admin-tau.vercel.app
 
-- Product listing from API with client-side search and sorting, plus API-based category filtering
-- Product details page with routing
-- Shopping cart with add, remove, and quantity controls
-- Cart persistence using localStorage with malformed-data fallback
-- Loading, error, and empty states
-- Responsive design for desktop and mobile
-- Demo checkout flow (no payment processing)
-
-## What this is not
-
-This is a portfolio demonstration project, not a production e-commerce application:
-
-- The Fake Store API provides all product data; there is no custom backend.
-- Checkout is a mock flow that does not process real payments.
-- There is no user authentication, order history, or account management.
-- Product options, currency selection, and advanced filtering are not implemented.
-- The application is a client-side Angular single-page application.
-
-## Architecture
-
-The application is organized into feature-focused Angular modules with clear separation of concerns:
+## Repository structure
 
 ```text
-src/app/
-├── products/   # Catalog, product details, product cards, API service, and models
-├── carts/      # Cart component and reactive cart state service
-├── shared/     # Reusable UI components and shared Angular dependencies
-└── app-routing.module.ts
+Market/
+├── apps/
+│   ├── storefront/   # Customer-facing Angular application
+│   └── admin/        # Operations/admin Angular application
+├── docs/
+│   ├── architecture.md
+│   └── productization-roadmap.md
+├── .github/workflows/ci.yml
+├── package.json
+└── vercel.json
 ```
 
-Routes:
+## Current product scope
 
-- `/products` — Product catalog with search, filtering, and sorting
-- `/details/:id` — Product detail page
-- `/cart` — Shopping cart review and demo checkout
-- `**` — Fallback redirect to catalog
+### Storefront
 
-## Tech stack
+- Catalog loaded from Fake Store API
+- Search, sorting, and API-based category filtering
+- Product details routing
+- Reactive cart state with localStorage persistence
+- Demo checkout flow
+- Behavioral tests and production build validation
 
-- Angular 16
-- TypeScript 5
-- RxJS for reactive state
-- Angular Router for navigation
-- Angular HttpClient for API requests
-- Bootstrap 5 for responsive layout
-- SCSS for component styling
-- Jasmine + Karma for unit tests
-- Fake Store API for product data
-- Vercel for the portfolio deployment
+### Admin
 
-## Visual architecture
+- Product catalog listing
+- Product creation form
+- Cart/order list with date filtering
+- Cart detail inspection
+- Cart deletion against the external demo API
 
-```mermaid
-flowchart LR
-  UI[Angular UI] --> Products[ProductsModule]
-  UI --> Cart[CartsModule]
-  UI --> Shared[SharedModule]
+## Important product boundary
 
-  Products --> API[Fake Store API]
-  Cart --> Storage[localStorage]
-  Cart --> API
-  Shared --> Router[Angular Router]
+The repository is now structured like a real multi-application product, but the current data layer still depends on **Fake Store API**, which is a demo service and does not provide durable production commerce behavior.
 
-  CI[GitHub Actions] --> Build[Production build]
-  CI --> Tests[ChromeHeadless unit tests]
-  Deploy[Vercel] --> UI
-```
+Features such as durable product writes, authentication, roles, inventory, customer accounts, payment processing, audit logs, and reliable order state are therefore **not yet represented as production-ready capabilities**.
 
-## Recruiter quick scan
+The productization roadmap in `docs/productization-roadmap.md` defines the work required to turn this codebase into a deployable and sellable commerce starter.
 
-- Feature-based Angular module ownership
-- Typed REST integration with Angular HttpClient
-- Reactive cart state with RxJS `BehaviorSubject`
-- Defensive localStorage restoration
-- Route-aware product detail loading
-- Behavioral unit tests for business logic and API contracts
-- CI validation with production build + headless tests
-- Live deployment on Vercel
+## Local development
 
-## Run locally
-
-Requirements: Node.js 18+ and npm 9+.
+Install both applications:
 
 ```bash
-git clone https://github.com/SamirNexus/Market.git
-cd Market
-npm install
-npm start
+npm run install:all
 ```
 
-Open `http://localhost:4200/`.
+Run the storefront:
+
+```bash
+npm run start:storefront
+```
+
+Run the admin dashboard in a second terminal:
+
+```bash
+npm run start:admin
+```
+
+Angular will default to port 4200, so when running both simultaneously pass a different port to one application:
+
+```bash
+npm --prefix apps/admin start -- --port 4201
+```
 
 ## Quality checks
 
 ```bash
 npm run build
-npm test
-npm run test:ci
+npm run test:storefront
 ```
 
-GitHub Actions validates the production build and runs the unit test suite on pushes and pull requests.
+GitHub Actions builds both applications and runs the storefront behavioral test suite on every pull request and push to `master`.
 
-## Portfolio highlights
+## Architecture direction
 
-- Converted a design into a component-based Angular single-page application
-- Integrated a public REST API through a dedicated typed service
-- Implemented client-side search and sorting with API-driven category filtering
-- Managed application state using RxJS `BehaviorSubject` for reactive cart updates
-- Added defensive localStorage restoration for malformed cart data
-- Added route-aware product detail loading
-- Added focused behavioral tests for cart logic, API contracts, catalog behavior, and route changes
-- Configured GitHub Actions for automated production builds and headless unit tests
-- Deployed the portfolio demo with Vercel
+```mermaid
+flowchart LR
+  Customer[Customer] --> Storefront[Angular Storefront]
+  Operator[Store Operator] --> Admin[Angular Admin]
+  Storefront --> CurrentAPI[Current demo API]
+  Admin --> CurrentAPI
+
+  Storefront -. productization .-> CommerceAPI[Commerce API]
+  Admin -. productization .-> CommerceAPI
+  CommerceAPI --> Database[(PostgreSQL)]
+  CommerceAPI --> Auth[Auth + RBAC]
+  CommerceAPI --> Payments[Payment Provider]
+```
+
+The solid arrows show the current implementation. Dashed arrows show the planned production architecture.
 
 ## Author
 
