@@ -1,13 +1,20 @@
 .catalog {
   &__intro {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
     gap: 32px;
-    margin-bottom: 36px;
+    margin-bottom: 24px;
+    padding: clamp(28px, 5vw, 58px);
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 90% 15%, rgba(123, 30, 34, 0.14), transparent 31%),
+      linear-gradient(135deg, #faf7f3 0%, #f4f4f0 100%);
+    border: 1px solid #ebe8e2;
+    border-radius: 28px;
 
-    h1 { margin: 8px 0; font-size: clamp(2rem, 4vw, 3.5rem); }
-    p { margin: 0; color: #666; }
+    h1 { max-width: 650px; margin: 8px 0; font-size: clamp(2.2rem, 4vw, 4rem); line-height: 1.04; letter-spacing: -0.04em; }
+    p { margin: 0; color: #666; font-size: 1.05rem; }
   }
 
   &__eyebrow {
@@ -20,8 +27,54 @@
   &__controls {
     display: grid;
     width: min(100%, 420px);
-    grid-template-columns: 1.4fr 1fr;
+    grid-template-columns: 1.35fr 1fr;
     gap: 12px;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: 18px;
+    box-shadow: 0 18px 50px rgba(34, 28, 22, 0.08);
+  }
+
+  &__search {
+    position: relative;
+
+    span {
+      position: absolute;
+      top: 50%;
+      left: 13px;
+      z-index: 2;
+      color: #777;
+      font-size: 1.25rem;
+      transform: translateY(-52%);
+    }
+
+    input { height: 100%; padding-left: 38px; }
+  }
+
+  &__benefits {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    margin-top: 24px;
+    color: #4e4e49;
+    font-size: 0.86rem;
+    font-weight: 600;
+  }
+
+  &__toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 0 0 20px;
+    padding: 0 4px;
+
+    p { margin: 0; color: #696969; }
+
+    div { display: flex; align-items: center; gap: 10px; }
+    label { color: #696969; font-size: 0.86rem; white-space: nowrap; }
+    select { min-width: 175px; border-color: #dedede; border-radius: 10px; }
   }
 
   &__notice {
@@ -47,4 +100,6 @@
 @media (max-width: 767px) {
   .catalog__intro { align-items: stretch; flex-direction: column; }
   .catalog__controls { grid-template-columns: 1fr; }
+  .catalog__toolbar { align-items: flex-start; flex-direction: column; }
+  .catalog__toolbar div, .catalog__toolbar select { width: 100%; }
 }
