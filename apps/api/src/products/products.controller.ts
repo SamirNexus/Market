@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
 } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -20,6 +21,11 @@ export class ProductsController {
     return this.products.findAll();
   }
 
+  @Get('categories')
+  findCategories() {
+    return this.products.findCategories();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.products.findOne(id);
@@ -28,6 +34,11 @@ export class ProductsController {
   @Post()
   create(@Body() input: CreateProductDto) {
     return this.products.create(input);
+  }
+
+  @Put(':id')
+  replace(@Param('id') id: string, @Body() input: UpdateProductDto) {
+    return this.products.update(id, input);
   }
 
   @Patch(':id')
