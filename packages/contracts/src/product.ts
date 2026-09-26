@@ -13,7 +13,7 @@ export interface ProductBase {
   price: number;
   description: string;
   category: string;
-  image: string;
+  image: string | null;
 }
 
 export interface Product extends ProductBase {
@@ -24,14 +24,16 @@ export interface Product extends ProductBase {
   rating?: ProductRating;
 }
 
-export interface StorefrontProduct extends ProductBase {
+export interface StorefrontProduct extends Omit<ProductBase, 'image'> {
+  image: string;
   rating: ProductRating;
 }
 
 export type ProductInput = Omit<ProductBase, 'id'>;
 
-export interface AdminProductInput extends ProductInput {
+export interface AdminProductInput extends Omit<ProductInput, 'image'> {
   slug: string;
   sku: string;
   stock: number;
+  image?: string;
 }
