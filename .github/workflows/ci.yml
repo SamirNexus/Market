@@ -72,14 +72,8 @@ jobs:
           node-version: 20
 
       - name: Install API dependencies
-        run: npm install --prefix apps/api --no-audit --no-fund
+        run: npm ci --prefix apps/api --no-audit --no-fund
 
-      - name: Capture API dependency lockfile
-        uses: actions/upload-artifact@v4
-        with:
-          name: api-package-lock
-          path: apps/api/package-lock.json
-          if-no-files-found: error
 
       - name: Generate Prisma client
         run: npm --prefix apps/api run prisma:generate
