@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Product, Prisma } from '@prisma/client';
+import { Product } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -94,7 +94,7 @@ export class ProductsService {
   private toResponse(product: Product) {
     return {
       ...product,
-      price: product.price.toNumber(),
+      price: Number(product.price),
     };
   }
 }
