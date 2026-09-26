@@ -1,19 +1,6 @@
+import type { Product } from '@market/contracts/product';
 
-
-export interface ProductRating {
-  rate: number;
-  count: number;
-}
-
-export interface Product {
-  id: number;
-  title: string;
-  price: number;
-  category: string;
-  description: string;
-  image: string;
-  rating: ProductRating;
-}
+export type { Product, ProductInput, ProductRating } from '@market/contracts/product';
 
 export interface CartItem {
   item: Product;
