@@ -1,0 +1,25 @@
+<div class="box">
+  <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <div class="row d-flex" *ngIf="!loading && data">
+    <div class="col-md-5 col-sm-12">
+      <img class="w-100" [src]="data.image" [alt]="data.title">
+    </div>
+    <div class="col-md-7 col-sm-12">
+      <div class="info">
+        <ul class="list-unstyled">
+          <li><strong>Title:</strong> {{ data.title }}</li>
+          <li><strong>Category:</strong> {{ data.category }}</li>
+          <li><strong>Description:</strong> {{ data.description }}</li>
+          <li *ngIf="data.rating"><strong>Rating:</strong> {{ data.rating.rate }}</li>
+          <li *ngIf="data.rating"><strong>Rating count:</strong> {{ data.rating.count }}</li>
+          <li><strong>Price:</strong> {{ data.price | currency:'USD' }}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center mt-5" *ngIf="loading">
+    <app-spinner></app-spinner>
+  </div>
+</div>

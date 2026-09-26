@@ -1,0 +1,11 @@
+{
+  "installCommand": "npm ci --prefix apps/storefront",
+  "buildCommand": "npm run build:storefront",
+  "outputDirectory": "apps/storefront/dist/app",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

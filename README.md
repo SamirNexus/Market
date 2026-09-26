@@ -1,128 +1,64 @@
-# Market — Angular E-Commerce Front End
+# Market Commerce Suite
 
-[![CI](https://github.com/SamirNexus/Market/actions/workflows/ci.yml/badge.svg)](https://github.com/SamirNexus/Market/actions/workflows/ci.yml)
-[![Angular](https://img.shields.io/badge/Angular-16-DD0031?logo=angular&logoColor=white)](https://angular.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+Market Commerce Suite combines a customer storefront and an operations dashboard in one repository.
 
-**Live demo:** https://market-two-rosy.vercel.app
+- **Storefront** — customer-facing catalog, product details, cart, and demo checkout.
+- **Admin** — internal catalog and cart/order operations.
+- **Product direction** — one configurable commerce system with separate customer and staff applications.
 
-Market is a responsive Angular e-commerce interface that demonstrates modern front-end architecture. It fetches real product data from the Fake Store API, integrating API requests, client-side search and sorting, API-driven category filtering, cart persistence, and responsive design.
+> This repository is being upgraded from a portfolio demo into a reusable commerce product foundation. It is **not yet presented as production commerce software**: real authentication, persistent backend data, payment processing, authorization, audit logs, inventory guarantees, and production order workflows remain explicit product work.
 
-## Core features
+## Applications
 
-- Product listing from API with client-side search and sorting, plus API-based category filtering
-- Product details page with routing
-- Shopping cart with add, remove, and quantity controls
-- Cart persistence using localStorage with malformed-data fallback
-- Loading, error, and empty states
-- Responsive design for desktop and mobile
-- Demo checkout flow (no payment processing)
+| Application | Path | Purpose |
+| --- | --- | --- |
+| Storefront | `apps/storefront` | Customer shopping experience |
+| Admin | `apps/admin` | Staff operations dashboard |
 
-## What this is not
+### Current live demos
 
-This is a portfolio demonstration project, not a production e-commerce application:
+- Storefront: https://market-two-rosy.vercel.app
+- Admin legacy deployment: https://market-admin-tau.vercel.app
 
-- The Fake Store API provides all product data; there is no custom backend.
-- Checkout is a mock flow that does not process real payments.
-- There is no user authentication, order history, or account management.
-- Product options, currency selection, and advanced filtering are not implemented.
-- The application is a client-side Angular single-page application.
+The admin deployment still comes from the historical `Market_Admin` repository while the monorepo migration is validated.
 
-## Architecture
-
-The application is organized into feature-focused Angular modules with clear separation of concerns:
+## Repository structure
 
 ```text
-src/app/
-├── products/   # Catalog, product details, product cards, API service, and models
-├── carts/      # Cart component and reactive cart state service
-├── shared/     # Reusable UI components and shared Angular dependencies
-└── app-routing.module.ts
+Market/
+├── apps/
+│   ├── storefront/
+│   └── admin/
+├── docs/
+│   ├── ARCHITECTURE.md
+│   └── PRODUCT_ROADMAP.md
+├── .github/workflows/ci.yml
+├── package.json
+└── vercel.json
 ```
 
-Routes:
+## Local development
 
-- `/products` — Product catalog with search, filtering, and sorting
-- `/details/:id` — Product detail page
-- `/cart` — Shopping cart review and demo checkout
-- `**` — Fallback redirect to catalog
-
-## Tech stack
-
-- Angular 16
-- TypeScript 5
-- RxJS for reactive state
-- Angular Router for navigation
-- Angular HttpClient for API requests
-- Bootstrap 5 for responsive layout
-- SCSS for component styling
-- Jasmine + Karma for unit tests
-- Fake Store API for product data
-- Vercel for the portfolio deployment
-
-## Visual architecture
-
-```mermaid
-flowchart LR
-  UI[Angular UI] --> Products[ProductsModule]
-  UI --> Cart[CartsModule]
-  UI --> Shared[SharedModule]
-
-  Products --> API[Fake Store API]
-  Cart --> Storage[localStorage]
-  Cart --> API
-  Shared --> Router[Angular Router]
-
-  CI[GitHub Actions] --> Build[Production build]
-  CI --> Tests[ChromeHeadless unit tests]
-  Deploy[Vercel] --> UI
-```
-
-## Recruiter quick scan
-
-- Feature-based Angular module ownership
-- Typed REST integration with Angular HttpClient
-- Reactive cart state with RxJS `BehaviorSubject`
-- Defensive localStorage restoration
-- Route-aware product detail loading
-- Behavioral unit tests for business logic and API contracts
-- CI validation with production build + headless tests
-- Live deployment on Vercel
-
-## Run locally
-
-Requirements: Node.js 18+ and npm 9+.
+Requirements: Node.js 18+ and npm.
 
 ```bash
-git clone https://github.com/SamirNexus/Market.git
-cd Market
-npm install
-npm start
+npm run install:all
+npm run start:storefront
+npm run start:admin
 ```
 
-Open `http://localhost:4200/`.
-
-## Quality checks
+## Quality commands
 
 ```bash
 npm run build
-npm test
-npm run test:ci
+npm run test:storefront
 ```
 
-GitHub Actions validates the production build and runs the unit test suite on pushes and pull requests.
+CI builds both applications and runs the current storefront test suite. Admin tests become a required merge gate after the dashboard hardening phase.
 
-## Portfolio highlights
+## Historical repositories
 
-- Converted a design into a component-based Angular single-page application
-- Integrated a public REST API through a dedicated typed service
-- Implemented client-side search and sorting with API-driven category filtering
-- Managed application state using RxJS `BehaviorSubject` for reactive cart updates
-- Added defensive localStorage restoration for malformed cart data
-- Added route-aware product detail loading
-- Added focused behavioral tests for cart logic, API contracts, catalog behavior, and route changes
-- Configured GitHub Actions for automated production builds and headless unit tests
-- Deployed the portfolio demo with Vercel
+The admin application originated in [Market_Admin](https://github.com/SamirNexus/Market_Admin). That repository stays available during migration so deployment and history are preserved.
 
 ## Author
 
