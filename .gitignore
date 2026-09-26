@@ -1,9 +1,29 @@
-node_modules/
-dist/
-coverage/
-.angular/
+# Dependencies
+**/node_modules/
+
+# Angular / build output
+**/dist/
+**/.angular/
+**/coverage/
+**/out-tsc/
+
+# Environment files
+**/.env
+**/.env.local
+!**/.env.example
+
+# Logs
+npm-debug.log*
+yarn-error.log*
+
+# Editors
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# OS
 .DS_Store
-*.log
-.env
-.env.*
-!.env.example
+Thumbs.db

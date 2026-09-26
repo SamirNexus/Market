@@ -1,36 +1,42 @@
 # Market Commerce Suite — Product Roadmap
 
-The goal is a reusable, configurable commerce product for small and medium merchants. Work is ordered by commercial risk rather than visual novelty.
+The goal is one reusable, configurable commerce product for small and medium merchants. Work is ordered by commercial risk rather than visual novelty.
 
 ## Phase 1 — Monorepo and quality baseline
 
-- Merge storefront and admin under one repository
-- Preserve independent builds and deployments
-- Keep the storefront deployment working
-- Add suite CI
-- Correct admin API semantics and error handling
-- Add meaningful admin tests
-- Align naming, TypeScript types, and module ownership
+- [x] Merge storefront and admin under one repository
+- [x] Preserve independent builds and deployments
+- [x] Add suite CI
+- [x] Correct admin API semantics and error handling
+- [x] Add meaningful admin tests
+- [x] Add shared typed contracts
+- [x] Move API endpoints to environment configuration
 
-**Exit criterion:** both apps build reliably and core admin workflows have automated coverage.
+**Exit criterion:** completed. Both front-end applications build reliably and core admin workflows have automated coverage.
 
-## Phase 2 — Real backend foundation
+## Phase 2 — Owned backend foundation
 
-- Server-side commerce API
-- Persistent database
-- Product/category CRUD
-- Inventory model
-- Cart/order model
-- Customer model
-- Environment-safe configuration
-- API validation and structured errors
+- [x] Create NestJS API application
+- [x] Add PostgreSQL/Prisma foundation
+- [x] Add product, user, order, order-item, and audit schema
+- [x] Add health endpoint
+- [x] Add initial product CRUD
+- [x] Add validation and environment configuration
+- [x] Add local PostgreSQL service with Docker Compose
+- [x] Commit deterministic API dependency lockfile
+- [x] Add API build/test/migration CI
+- [x] Add initial database migration
+- [x] Add seed data
+- [ ] Connect admin catalog CRUD to owned API
+- [ ] Connect storefront catalog reads to owned API
+- [ ] Add inventory rules
 
-**Exit criterion:** no core commerce write depends on a public demo API.
+**Exit criterion:** no core catalog write depends on a public demo API.
 
 ## Phase 3 — Identity and operations
 
-- Customer authentication
 - Staff authentication
+- Customer authentication
 - Role-based permissions
 - Protected admin routes
 - Audit log for admin mutations
@@ -63,4 +69,4 @@ The goal is a reusable, configurable commerce product for small and medium merch
 - License and commercial packaging
 - Buyer-facing onboarding, screenshots, and demo data
 
-**Exit criterion:** the product can be demonstrated, deployed, maintained, and sold without misrepresenting prototype functionality.
+**Exit criterion:** Market can be demonstrated, deployed, maintained, and sold without misrepresenting prototype functionality.

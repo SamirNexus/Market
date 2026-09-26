@@ -4,11 +4,16 @@
   "private": true,
   "scripts": {
     "install:all": "npm ci --prefix apps/storefront && npm ci --prefix apps/admin",
+    "install:api": "npm ci --prefix apps/api",
     "start:storefront": "npm --prefix apps/storefront start",
     "start:admin": "npm --prefix apps/admin start",
-    "build": "npm run build:storefront && npm run build:admin",
+    "start:api": "npm --prefix apps/api run start:dev",
+    "build": "npm run build:storefront && npm run build:admin && npm run build:api",
     "build:storefront": "npm --prefix apps/storefront run build",
     "build:admin": "npm --prefix apps/admin run build",
-    "test:storefront": "npm --prefix apps/storefront run test:ci"
+    "build:api": "npm --prefix apps/api run build",
+    "test:storefront": "npm --prefix apps/storefront run test:ci",
+    "test:admin": "npm --prefix apps/admin run test:ci",
+    "test:api": "npm --prefix apps/api run test:ci"
   }
 }

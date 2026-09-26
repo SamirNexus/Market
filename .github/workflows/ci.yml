@@ -7,7 +7,7 @@ on:
     branches: [master, main]
 
 jobs:
-  quality:
+  frontend-quality:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -35,7 +35,60 @@ jobs:
         run: npm run test:storefront
 
       - name: Test admin
-        run: npm --prefix apps/admin run test:ci
+        run: npm run test:admin
 
       - name: Build admin
         run: npm run build:admin
+
+  api-quality:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: market
+          POSTGRES_USER: market
+          POSTGRES_PASSWORD: market
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U market -d market"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://market:market@localhost:5432/market?schema=public
+      CORS_ORIGINS: http://localhost:4200,http://localhost:4201
+      PORT: 3000
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install API dependencies
+        run: npm ci --prefix apps/api --no-audit --no-fund
+
+
+      - name: Generate Prisma client
+        run: npm --prefix apps/api run prisma:generate
+
+      - name: Validate Prisma schema
+        run: npm --prefix apps/api run prisma:validate
+
+      - name: Apply database migrations
+        run: npm --prefix apps/api run prisma:migrate:deploy
+
+      - name: Seed database
+        run: npm --prefix apps/api run prisma:seed
+
+      - name: Test API
+        run: npm run test:api
+
+      - name: Build API
+        run: npm run build:api
