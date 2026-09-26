@@ -64,11 +64,37 @@ export class CartsService {
   private readCart(): CartItem[] {
     try {
       const stored = localStorage.getItem(this.storageKey);
-      const parsed = stored ? JSON.parse(stored) : [];
-      return Array.isArray(parsed) ? parsed : [];
+      const parsed: unknown = stored ? JSON.parse(stored) : [];
+      if (!Array.isArray(parsed)) return [];
+
+      return parsed
+        .filter((entry): entry is CartItem => this.isValidCartItem(entry))
+        .map((entry) => ({
+          item: entry.item,
+          quantity: Math.max(1, Math.floor(entry.quantity)),
+        }));
     } catch {
       return [];
     }
+  }
+
+  private isValidCartItem(entry: unknown): entry is CartItem {
+    if (!entry || typeof entry !== 'object') return false;
+
+    const candidate = entry as Partial<CartItem>;
+    const product = candidate.item as Partial<Product> | undefined;
+
+    return !!product
+      && Number.isFinite(product.id)
+      && typeof product.title === 'string'
+      && Number.isFinite(product.price)
+      && typeof product.category === 'string'
+      && typeof product.description === 'string'
+      && typeof product.image === 'string'
+      && !!product.rating
+      && Number.isFinite(product.rating.rate)
+      && Number.isFinite(product.rating.count)
+      && Number.isFinite(candidate.quantity);
   }
 
   private getItemCount(cart: CartItem[]): number {
