@@ -1,77 +1,75 @@
-# 🛒 Market – E-Commerce Web Application
+# Market — Angular E-Commerce Front End
 
-**Market** is a modern and responsive e-commerce web application built with **Angular**. It provides a seamless shopping experience with features like product listing, detailed product pages, and a dynamic shopping cart.
+[![CI](https://github.com/SamirNexus/Market/actions/workflows/ci.yml/badge.svg)](https://github.com/SamirNexus/Market/actions/workflows/ci.yml)
+[![Angular](https://img.shields.io/badge/Angular-16-DD0031?logo=angular&logoColor=white)](https://angular.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
----
+Market is a responsive Angular e-commerce experience built from a Figma design. It demonstrates product discovery, product details, configurable options, currency selection, and cart interactions using a modular feature-based structure.
 
-## 🌟 Key Features / Functionality
+## Core features
 
-- ✅ **PLP** – Product Listing Page (category page)  
-- ✅ **PDP** – Product Description Page (product page)  
-- ✅ **Cart Page + Cart Overlay** – Add/remove products and adjust quantities quickly  
-- ✅ Ability to change **store currency** to any available option  
-- ✅ Responsive Design – Optimized for desktop and mobile devices  
+- Product listing and category filtering
+- Product details with API-driven content
+- Configurable product attributes
+- Cart page and quick-access cart overlay
+- Add, remove, and update product quantities
+- Currency selection across the shopping flow
+- Loading states and reusable shared components
+- Responsive desktop and mobile layouts
+- Fallback routing to the product catalog
 
----
+## Architecture
 
-## 🛠️ Design
+The application separates products, cart behavior, and shared UI into Angular feature modules. API communication is isolated in injectable services, while reusable controls such as the header, select input, and loading spinner live in the shared module.
 
-- The design is implemented based on **Figma prototypes**  
+```text
+src/app/
+├── products/   # Catalog, product cards, details, and product API service
+├── carts/      # Cart UI and cart service
+├── shared/     # Header, select, spinner, and shared state
+└── app-routing.module.ts
+```
 
----
+## Tech stack
 
-## 📂 Details
+- Angular 16
+- TypeScript 5
+- RxJS
+- Angular Router and HttpClient
+- Bootstrap 5
+- SCSS
+- Fake Store API
 
-- Ability to add/remove products and change amounts in the **cart** (Cart Page, PLP, and PDP)  
-- Products with multiple options (attributes) can have selectable options  
-- Selected options of products are visible in the **cart overlay** and on the **cart page**  
-- Product descriptions provided in HTML format are rendered as HTML, not plain text  
+## Run locally
 
----
-
-## 🛠️ Technologies Used
-
-- **Angular CLI** – Front-end framework  
-- **TypeScript** – Programming language  
-- **HTML5** – Structuring the content  
-- **CSS3** – Styling and layout  
-- **Figma** – Design prototypes  
-
----
-
-## 📥 How to Run / Development Server
-
-1. **Clone the repository:**  
+Requirements: Node.js 18+ and npm 9+.
 
 ```bash
 git clone https://github.com/SamirNexus/Market.git
-Install dependencies:
-
-bash
-Copy code
 cd Market
 npm install
-Start Angular dev server:
+npm start
+```
 
-bash
-Copy code
-yarn start
-Navigate to http://localhost:4200/
+Open `http://localhost:4200/`.
 
-The application will automatically reload if you change any source files
+## Quality checks
 
-🧪 Running Unit Tests
-Use Angular CLI commands to run unit tests:
+```bash
+npm run build
+npm test
+```
 
-bash
-Copy code
-ng test
-🚀 Author
-SamirNexus – Software Engineer & Web Developer
-GitHub: https://github.com/SamirNexu
+The production build is validated automatically on every push and pull request through GitHub Actions.
 
-* Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+## Portfolio highlights
 
-## Running end-to-end tests
+- Converted a Figma shopping flow into a component-based Angular application
+- Integrated product and category endpoints through dedicated services
+- Kept cart, product, and shared concerns separated into feature modules
+- Implemented responsive catalog, details, and cart experiences
 
+## Author
 
+**Mohamed Samir** — Front-End Developer  
+[GitHub](https://github.com/SamirNexus) · [LinkedIn](https://www.linkedin.com/in/samirnexus98/)
