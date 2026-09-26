@@ -1,4 +1,4 @@
-import { Component,OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ProductsService } from '../../services/products.service';
 import { Product } from '../../models/product';
@@ -9,8 +9,8 @@ import { CartsService } from '../../../carts/services/carts.service';
   templateUrl: './product-details.component.html',
   styleUrls: ['./product-details.component.scss']
 })
-export class ProductDetailsComponent  implements OnInit {
-  id = Number(this.route.snapshot.paramMap.get('id'));
+export class ProductDetailsComponent implements OnInit {
+  id = 0;
   data?: Product;
   loading = true;
   errorMessage = '';
@@ -21,11 +21,22 @@ export class ProductDetailsComponent  implements OnInit {
     private service: ProductsService,
     private cartsService: CartsService,
   ) {}
+
   ngOnInit(): void {
-    this.getProduct();
+    this.route.paramMap.subscribe((params) => {
+      this.id = Number(params.get('id'));
+      this.getProduct();
+    });
   }
 
   getProduct(): void {
+    if (!Number.isFinite(this.id) || this.id <= 0) {
+      this.loading = false;
+      this.data = undefined;
+      this.errorMessage = 'This product could not be loaded. Please try again.';
+      return;
+    }
+
     this.loading = true;
     this.errorMessage = '';
     this.service.getProductById(this.id).subscribe({
@@ -34,6 +45,7 @@ export class ProductDetailsComponent  implements OnInit {
         this.loading = false;
       },
       error: () => {
+        this.data = undefined;
         this.loading = false;
         this.errorMessage = 'This product could not be loaded. Please try again.';
       },
