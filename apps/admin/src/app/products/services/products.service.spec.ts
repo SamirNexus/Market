@@ -1,6 +1,6 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { Product, ProductInput } from '../models/product';
+import { AdminProductInput, Product } from '../models/product';
 import { ProductsService } from './products.service';
 
 describe('ProductsService', () => {
@@ -8,21 +8,26 @@ describe('ProductsService', () => {
   let http: HttpTestingController;
 
   const product: Product = {
-    id: 1,
+    id: 'product-1',
     title: 'Camera',
+    slug: 'camera',
+    sku: 'CAM-001',
+    stock: 5,
     price: 100,
     description: 'Test product',
     category: 'electronics',
-    image: 'camera.jpg',
-    rating: { rate: 4.5, count: 12 },
+    image: 'https://example.com/camera.jpg',
   };
 
-  const payload: ProductInput = {
+  const payload: AdminProductInput = {
     title: product.title,
+    slug: 'camera',
+    sku: 'CAM-001',
+    stock: 5,
     price: product.price,
     description: product.description,
     category: product.category,
-    image: product.image,
+    image: product.image || undefined,
   };
 
   beforeEach(() => {
@@ -60,20 +65,20 @@ describe('ProductsService', () => {
     request.flush(product);
   });
 
-  it('updates a product with PUT', () => {
-    service.updateProduct(1, payload).subscribe();
+  it('updates string product ids with PUT', () => {
+    service.updateProduct('product-1', payload).subscribe();
 
-    const request = http.expectOne('https://fakestoreapi.com/products/1');
+    const request = http.expectOne('https://fakestoreapi.com/products/product-1');
     expect(request.request.method).toBe('PUT');
     expect(request.request.body).toEqual(payload);
     request.flush(product);
   });
 
-  it('deletes a product', () => {
-    service.deleteProduct(1).subscribe();
+  it('archives a product through DELETE', () => {
+    service.deleteProduct('product-1').subscribe();
 
-    const request = http.expectOne('https://fakestoreapi.com/products/1');
+    const request = http.expectOne('https://fakestoreapi.com/products/product-1');
     expect(request.request.method).toBe('DELETE');
-    request.flush(product);
+    request.flush({ ...product, status: 'ARCHIVED' });
   });
 });
