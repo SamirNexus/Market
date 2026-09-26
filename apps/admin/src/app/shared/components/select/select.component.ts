@@ -1,23 +1,20 @@
-import { Component, EventEmitter, Input, OnInit,Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
   selector: 'app-select',
   templateUrl: './select.component.html',
   styleUrls: ['./select.component.scss']
 })
+export class SelectComponent {
+  @Input() title = '';
+  @Input() data: string[] = [];
+  @Input() all = true;
+  @Input() select = '';
+  @Input() controlId = 'admin-select';
+  @Output() selectedValue = new EventEmitter<string>();
 
-export class SelectComponent  {
-  @Input()title:string = ""
-  @Input()data:any[]=[]
-  @Input()all:boolean = true
-  @Input()select=''
-  @Output()selectedValue = new EventEmitter
-
-  constructor(){}
-  ngOnint(): void{}
-  detectChanges(event:any){
-   this.selectedValue.emit(event)
-    
+  detectChanges(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    this.selectedValue.emit(select.value);
   }
 }
-
