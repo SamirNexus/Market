@@ -1,14 +1,35 @@
 <section class="catalog container py-5">
   <div class="catalog__intro">
-    <div>
+    <div class="catalog__copy">
       <span class="catalog__eyebrow">CURATED ESSENTIALS</span>
       <h1>Products for everyday life</h1>
       <p>Discover quality picks across electronics, fashion, and accessories.</p>
+      <div class="catalog__benefits" aria-label="Shopping benefits">
+        <span>✓ Curated quality</span>
+        <span>✓ Secure checkout</span>
+        <span>✓ Easy returns</span>
+      </div>
     </div>
     <div class="catalog__controls">
-      <label class="visually-hidden" for="product-search">Search products</label>
-      <input id="product-search" class="form-control" type="search" placeholder="Search products..." [(ngModel)]="searchTerm">
+      <div class="catalog__search">
+        <span aria-hidden="true">⌕</span>
+        <label class="visually-hidden" for="product-search">Search products</label>
+        <input id="product-search" class="form-control" type="search" placeholder="Search products..." [(ngModel)]="searchTerm">
+      </div>
       <app-select [data]="categories" [title]="'All categories'" (selectedValue)="filterCategory($event)"></app-select>
+    </div>
+  </div>
+
+  <div class="catalog__toolbar" *ngIf="!loading && !errorMessage">
+    <p><strong>{{ visibleProducts.length }}</strong> products</p>
+    <div>
+      <label for="product-sort">Sort by</label>
+      <select id="product-sort" class="form-select" [(ngModel)]="sortBy">
+        <option value="featured">Featured</option>
+        <option value="rating">Top rated</option>
+        <option value="price-low">Price: low to high</option>
+        <option value="price-high">Price: high to low</option>
+      </select>
     </div>
   </div>
 
