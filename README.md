@@ -60,6 +60,35 @@ Routes:
 - Fake Store API for product data
 - Vercel for the portfolio deployment
 
+## Visual architecture
+
+```mermaid
+flowchart LR
+  UI[Angular UI] --> Products[ProductsModule]
+  UI --> Cart[CartsModule]
+  UI --> Shared[SharedModule]
+
+  Products --> API[Fake Store API]
+  Cart --> Storage[localStorage]
+  Cart --> API
+  Shared --> Router[Angular Router]
+
+  CI[GitHub Actions] --> Build[Production build]
+  CI --> Tests[ChromeHeadless unit tests]
+  Deploy[Vercel] --> UI
+```
+
+## Recruiter quick scan
+
+- Feature-based Angular module ownership
+- Typed REST integration with Angular HttpClient
+- Reactive cart state with RxJS `BehaviorSubject`
+- Defensive localStorage restoration
+- Route-aware product detail loading
+- Behavioral unit tests for business logic and API contracts
+- CI validation with production build + headless tests
+- Live deployment on Vercel
+
 ## Run locally
 
 Requirements: Node.js 18+ and npm 9+.
