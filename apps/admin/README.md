@@ -1,70 +1,43 @@
-# 🏬 Market_Admin – Admin Dashboard for Market App
+# Market Admin
 
-**Market_Admin** is the administrative dashboard for the Market e-commerce app, built using **Angular**. It allows admins to manage products, orders, and users through a modern interface.
+Market Admin is the internal operations application for the Market Commerce Suite.
 
----
+It currently provides a working Angular dashboard for:
 
-## 🌟 Key Features
+- catalog listing
+- create/update/delete product interactions against the Fake Store API
+- cart listing and date filtering
+- cart detail inspection
+- demo cart deletion
+- loading, error, and feedback states
 
-- ✅ Admin login and authentication  
-- ✅ Product management (create, update, delete)  
-- ✅ Order management and tracking  
-- ✅ User management (view, ban, edit roles)  
-- ✅ Responsive layout – admin usable from desktop and mobile  
+## Important product boundary
 
----
+This dashboard is part of an active migration from demo infrastructure to a commercial product foundation.
 
-## 🛠️ Technologies Used
+The current Fake Store API simulates writes and does not persist production merchant data. Real staff authentication, role-based authorization, inventory, persistent orders, customer management, audit logs, and payment operations are planned at the suite level and are **not claimed as implemented here**.
 
-- **Angular CLI** – front-end framework  
-- **TypeScript** – typed JavaScript  
-- **HTML5** – content structure  
-- **CSS3 / SCSS** – styling  
-- MAY include libraries like **NgRx**, **Angular Material**, etc.  
+## Run locally
 
----
-
-## 📂 Project Structure
-
-Market_Admin/
-┣ src/ # Source code files (components, services, etc.)
-┣ .editorconfig # Editor configuration
-┣ .gitignore # Files/folders to ignore in Git
-┣ angular.json # Angular project configuration
-┣ package.json # Project dependencies & scripts
-┣ tsconfig.json # TypeScript config
-┣ tsconfig.app.json # TS config for app part
-┣ tsconfig.spec.json # TS config for tests
-┗ README.md # This file
-
-
-
----
-
-## 📥 How to Use / Run
-
-1. **Clone the repository:**
+From the repository root:
 
 ```bash
-git clone https://github.com/SamirNexus/Market_Admin.git
-Install dependencies:
+npm run install:all
+npm run start:admin
+```
 
-cd Market_Admin
-npm install
-Run the dev server:
+Or from this directory:
 
+```bash
+npm ci
+npm start
+```
 
-ng serve
-Then open your browser to:
-http://localhost:4200/
+## Quality
 
-The app will reload if you make changes to source files
+```bash
+npm run build
+npm run test:ci
+```
 
-🧪 Running Tests
-To run unit tests:
-
-
-ng test
-🚀 Author
-SamirNexus – Software Engineer & Web Developer
-GitHub: https://github.com/SamirNexus
+See the root [architecture](../../docs/ARCHITECTURE.md) and [product roadmap](../../docs/PRODUCT_ROADMAP.md) for the production target.
