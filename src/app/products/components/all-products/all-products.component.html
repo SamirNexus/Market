@@ -1,18 +1,36 @@
-<div class="box mt-5">
-  <div class="my-2 w-25">
-  <!-- bass data from child to parent (recieve data)         how filter work ==> take data as Parameter and go to service to concatination with api  witch i work on it  -->
-   <app-select [data]="categorise"[title]="'categorise'" (selectedValue) ="filtterCategory($event)"></app-select>
-  </div>
-    <div class="row" *ngIf="!loading">
-        <div *ngFor ="let product of products"   class="col-md-3 col-sm-12">
-          <app-product [data]="product" (item)="addtoCart($event)"></app-product>
-        </div>
-    
+<section class="catalog container py-5">
+  <div class="catalog__intro">
+    <div>
+      <span class="catalog__eyebrow">CURATED ESSENTIALS</span>
+      <h1>Products for everyday life</h1>
+      <p>Discover quality picks across electronics, fashion, and accessories.</p>
     </div>
+    <div class="catalog__controls">
+      <label class="visually-hidden" for="product-search">Search products</label>
+      <input id="product-search" class="form-control" type="search" placeholder="Search products..." [(ngModel)]="searchTerm">
+      <app-select [data]="categories" [title]="'All categories'" (selectedValue)="filterCategory($event)"></app-select>
+    </div>
+  </div>
 
-<div class="text-center w-100" *ngIf="loading">
+  <div class="catalog__notice" role="status" *ngIf="cartMessage">{{ cartMessage }}</div>
+
+  <div class="alert alert-danger d-flex justify-content-between align-items-center" *ngIf="errorMessage">
+    <span>{{ errorMessage }}</span>
+    <button class="btn btn-outline-danger btn-sm" (click)="getProducts()">Try again</button>
+  </div>
+
+  <div class="row g-4" *ngIf="!loading && !errorMessage">
+    <div *ngFor="let product of visibleProducts" class="col-xl-3 col-lg-4 col-md-6">
+      <app-product [data]="product" (item)="addToCart($event)"></app-product>
+    </div>
+  </div>
+
+  <div class="catalog__empty" *ngIf="!loading && !errorMessage && visibleProducts.length === 0">
+    <h2>No products found</h2>
+    <p>Try a different keyword or select another category.</p>
+  </div>
+
+  <div class="text-center w-100 py-5" *ngIf="loading">
     <app-spinner></app-spinner>
-</div>
-
-
-</div>
+  </div>
+</section>

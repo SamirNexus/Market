@@ -1,11 +1,21 @@
 
 
-  export interface  product  {
+export interface ProductRating {
+  rate: number;
+  count: number;
+}
 
-   id: number,
-   title: string,
-   price: string,
-   category: string,
-   description: string,
-   image: string
+export interface Product {
+  id: number;
+  title: string;
+  price: number;
+  category: string;
+  description: string;
+  image: string;
+  rating: ProductRating;
+}
+
+export interface CartItem {
+  item: Product;
+  quantity: number;
 }

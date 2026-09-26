@@ -1,56 +1,53 @@
-<div class="cartBox">
-<h1 class="text-danger">Shoping Cart</h1>
-<div class="headCart">
-    <p class="lead ">You Have<label class="text-danger  border">{{cartProducts.length}}</label> Item In Your Cart</p>
-    <span class=" text-black  card  bg-danger-subtle  " (click)="clearCart()">Clear Shoping Cart</span>
-</div>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th></th>
-            <th>Name</th>
-            <th>price</th>
-            <th style="width:25%;">Quantity</th>
-            <th>Total</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr *ngFor= "let item of cartProducts;let index = index">
-            <td><img src="{{item.item.image}}" alt=""></td>
-            <td>{{item.item.title}}</td>
-            <td>{{item.item.price}} L.E</td>
-            <td>
-                <div class="quantity" >
-                    <button class="btn btn-dark " (click)="addAmount(index)">+</button>
-                    <input  class="form-control " type="number"(change)="detectChange()" [(ngModel)] = "item.quantity"  min="1">
-                    <button class="btn btn-dark" (click)="minsAmount(index)">-</button>
-                </div>
-                </td>
-                <td>{{item.item.price * item.quantity }} L.E</td>
-                <td>
-                    <button class="btn btn-danger" (click)="deleteProuduct(index)">Delete</button>
-                </td>
-                </tr>
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th class="border-0 accordion active"> ToTaL:{{totalprice}} LE</th>
-                        <th><button *ngIf="cartProducts.length >  0" class="btn btn-success btn-sm" (click)="addcart()">Order Now</button></th>
-                    </tr>
-                </tfoot>
+<section class="cart-page container py-5">
+  <div class="cart-page__header">
+    <div>
+      <span>YOUR SELECTION</span>
+      <h1>Shopping cart</h1>
+      <p *ngIf="cartProducts.length">{{ cartProducts.length }} unique item{{ cartProducts.length === 1 ? '' : 's' }} in your cart</p>
+    </div>
+    <button class="btn btn-link text-danger" *ngIf="cartProducts.length" (click)="clearCart()">Clear cart</button>
+  </div>
 
-                </table>
-                </div>
-                <div   *ngIf="cartProducts.length >  0">
-                    <div  class="alert alert-success"*ngIf= "success "><strong>Well Done</strong> Your Order Is Successfully Send</div>
+  <div class="cart-page__empty" *ngIf="!cartProducts.length && !success">
+    <h2>Your cart is empty</h2>
+    <p>Explore the catalog and add something you like.</p>
+    <a class="btn btn-dark" routerLink="/products">Continue shopping</a>
+  </div>
 
-                </div>
+  <div class="row g-4" *ngIf="cartProducts.length">
+    <div class="col-lg-8">
+      <article class="cart-item" *ngFor="let entry of cartProducts; let index = index">
+        <img [src]="entry.item.image" [alt]="entry.item.title">
+        <div class="cart-item__details">
+          <span>{{ entry.item.category }}</span>
+          <h2>{{ entry.item.title }}</h2>
+          <button class="btn btn-link text-danger p-0" (click)="removeProduct(index)">Remove</button>
+        </div>
+        <div class="cart-item__quantity">
+          <button aria-label="Decrease quantity" (click)="changeQuantity(index, entry.quantity - 1)">−</button>
+          <input type="number" min="1" [ngModel]="entry.quantity" (ngModelChange)="changeQuantity(index, $event)" aria-label="Quantity">
+          <button aria-label="Increase quantity" (click)="changeQuantity(index, entry.quantity + 1)">+</button>
+        </div>
+        <strong>{{ entry.item.price * entry.quantity | currency:'USD' }}</strong>
+      </article>
+    </div>
 
+    <aside class="col-lg-4">
+      <div class="order-summary">
+        <h2>Order summary</h2>
+        <div><span>Subtotal</span><strong>{{ totalPrice | currency:'USD' }}</strong></div>
+        <div><span>Shipping</span><strong>Free</strong></div>
+        <div class="order-summary__total"><span>Total</span><strong>{{ totalPrice | currency:'USD' }}</strong></div>
+        <button class="btn btn-dark btn-lg w-100" [disabled]="submitting" (click)="placeOrder()">
+          {{ submitting ? 'Placing order…' : 'Place order' }}
+        </button>
+        <p>Secure demo checkout · No payment details required</p>
+      </div>
+    </aside>
+  </div>
 
- 
-               
+  <div class="alert alert-success" *ngIf="success">
+    <strong>Order confirmed.</strong> Your demo order was submitted successfully.
+  </div>
+  <div class="alert alert-danger" *ngIf="orderError">{{ orderError }}</div>
+</section>

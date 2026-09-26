@@ -1,8 +1,20 @@
-/* You can add global styles to this file, and also import other style files */
-body{
-    padding: 0;
-    margin: 0 !important;
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  color: #171717;
+  background: #fff;
+  font-family: Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
-*{
-font-family: cursive;
+
+button, input, select { font: inherit; }
+
+.btn-dark {
+  --bs-btn-bg: #171717;
+  --bs-btn-border-color: #171717;
+  --bs-btn-hover-bg: #333;
+  --bs-btn-hover-border-color: #333;
 }

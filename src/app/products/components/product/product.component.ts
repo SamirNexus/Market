@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { product } from '../../models/product';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Product } from '../../models/product';
 
 @Component({
   selector: 'app-product',
@@ -7,17 +7,16 @@ import { product } from '../../models/product';
   styleUrls: ['./product.component.scss']
 })
 
-export class ProductComponent implements OnInit{
-  // data come from parent.
-@Input() data!:product
-  // data go to parent .
-@Output()item = new EventEmitter
-addBtn:boolean = false;
-amount:number=0;
-constructor(){}
-ngOnInit(): void {
-}
-add(){
-this.item.emit({item:this.data,quantity:this.amount})
-}
+export class ProductComponent {
+  @Input() data!: Product;
+  @Output() item = new EventEmitter<{ item: Product; quantity: number }>();
+
+  selectingQuantity = false;
+  amount = 1;
+
+  add(): void {
+    this.item.emit({ item: this.data, quantity: Math.max(1, this.amount) });
+    this.amount = 1;
+    this.selectingQuantity = false;
+  }
 }

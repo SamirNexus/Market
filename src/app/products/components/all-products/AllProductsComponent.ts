@@ -1,6 +1,7 @@
-import { Component, OnInit  } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ProductsService } from '../../services/products.service';
-import { product } from '../../models/product';
+import { Product } from '../../models/product';
+import { CartsService } from '../../../carts/services/carts.service';
 
 @Component({
   selector: 'app-all-products',
@@ -8,77 +9,71 @@ import { product } from '../../models/product';
   styleUrls: ['./all-products.component.scss']
 })
 export class AllProductsComponent implements OnInit {
-  
-  products:product[] = [];
-  categorise:string[] = [];
-  loading:boolean = false;
-  cartProducts:any[]=[];
-  
-// i use indpendency injection here to accsess api in this componet (private service: ProductsService) and i used observable to link data between front and back such as (subscribe)
-  constructor(private service: ProductsService) { }
-   ngOnInit(): void {
-    //write here all method witch i need rum when page load 
+  products: Product[] = [];
+  categories: string[] = [];
+  loading = false;
+  errorMessage = '';
+  searchTerm = '';
+  cartMessage = '';
+
+  constructor(
+    private productsService: ProductsService,
+    private cartsService: CartsService,
+  ) {}
+
+  ngOnInit(): void {
     this.getProducts();
     this.getCategories();
   }
+
+  get visibleProducts(): Product[] {
+    const query = this.searchTerm.trim().toLowerCase();
+    if (!query) return this.products;
+    return this.products.filter((product) =>
+      `${product.title} ${product.category} ${product.description}`.toLowerCase().includes(query),
+    );
+  }
+
   getProducts() {
-    this.loading = true
-    this.service.getAllproducts().subscribe((res:any) => {
-      this.products = res;
-      this.loading = false
-    }
-   ,error=>{
-    alert(error)
-   });
+    this.loadProducts(this.productsService.getAllProducts());
   }
+
   getCategories() {
-    this.loading = true
-    this.service.getAllCategories().subscribe((res:any) => {
-      this.categorise = res;
-      this.loading = false
-      console.log(res)
-    }
-   ,error=>{
-    this.loading = false
-   alert(error)
-   });
+    this.productsService.getAllCategories().subscribe({
+      next: (categories) => (this.categories = categories),
+      error: () => (this.categories = []),
+    });
   }
-  // filter work ==> take data as Parameter and go to service to concatination with api  witch i work on it 
-  filtterCategory(event:any){
-    // event.target ==> what the user choose in categorise
-    let value = event.target.value;
-    // if categorie = all return all categorie  else  give me selected categorie 
-    // short condition 
-    (value == "All") ? this.getProducts():this.getproductsCategory(value)
-  }
-  getproductsCategory(keyword:string){
-    this.loading = true
-    this.service.getProductsInASpecificCategory(keyword).subscribe((res:any)=>{
-      this.loading = false
-        this.products = res;
-    })
 
-    }
-    
-    addtoCart(event:any){
-      // first i take data from array to localStorage then push new data in array then push it in localstorge.
-      // to avoid over wright data i make array and push data in it then push in local storage to make it updated and avoid overwright data.
-      // JSON.stringify() send data
-        // JSON.parse() Recieve data
-    if("cart" in localStorage){
-      this.cartProducts = JSON.parse(localStorage.getItem('cart')!) //! to avoid null 
-      let exist = this.cartProducts.find(item=>item.item.id == event.item.id)
-      // cheak if product in cart or no.
-      if(exist){
-        alert('PROUDUCT IS ALREADY IN YOUR CART')
-      }else{
-        this.cartProducts.push(event)
-        localStorage.setItem('cart',JSON.stringify(this.cartProducts))
-      }
-    }else{
-      this.cartProducts.push(event)
-      localStorage.setItem('cart',JSON.stringify(this.cartProducts))
-    }
-    }
-
+  filterCategory(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    value === 'All' ? this.getProducts() : this.getProductsByCategory(value);
   }
+
+  getProductsByCategory(category: string): void {
+    this.loadProducts(this.productsService.getProductsInCategory(category));
+  }
+
+  addToCart(event: { item: Product; quantity: number }): void {
+    const result = this.cartsService.addItem(event.item, event.quantity);
+    this.cartMessage = result === 'added'
+      ? `${event.item.title} added to your cart.`
+      : `${event.item.title} quantity updated.`;
+    window.setTimeout(() => (this.cartMessage = ''), 2500);
+  }
+
+  private loadProducts(request: ReturnType<ProductsService['getAllProducts']>): void {
+    this.loading = true;
+    this.errorMessage = '';
+    request.subscribe({
+      next: (products) => {
+        this.products = products;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+        this.errorMessage = 'We could not load the catalog. Please check your connection and try again.';
+      },
+    });
+  }
+}

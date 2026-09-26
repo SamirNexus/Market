@@ -1,22 +1,29 @@
-<div class="box">
-    <div class="row d-flex"*ngIf= "loading">
+<section class="product-details container" *ngIf="!loading && data">
+    <a routerLink="/products" class="product-details__back">← Back to products</a>
+    <div class="row align-items-center g-5">
         <div class="col-md-5 col-sm-12">
-            <img src="{{data.image}}" alt="sas">
+            <div class="product-details__image-wrap">
+              <img [src]="data.image" [alt]="data.title">
+            </div>
         </div>
         <div class="col-md-7 col-sm-12">
-        <div class="info">
-            <ul class="list-unstyled">
-                <li><strong class=" bg-danger-subtle">Title </strong>: {{data.title}}</li>
-                <li><strong class=" bg-danger-subtle " >Category </strong>: {{data.category}}</li>
-                <li><strong class=" bg-danger-subtle">Description </strong>: {{data.description}}</li>
-                <li><strong class=" bg-danger-subtle">Rate </strong>: {{data.rating.rate}}</li>
-                <li><strong class=" bg-danger-subtle">count </strong>: {{data.rating.count}}</li>
-                <li><strong class=" bg-danger-subtle">price </strong>: {{data.price}} L.E</li>
-            </ul>
-        </div>
+          <span class="product-details__category">{{ data.category }}</span>
+          <h1>{{ data.title }}</h1>
+          <div class="product-details__rating">★ {{ data.rating.rate }} · {{ data.rating.count }} reviews</div>
+          <p>{{ data.description }}</p>
+          <strong class="product-details__price">{{ data.price | currency:'USD' }}</strong>
+          <div class="d-flex align-items-center gap-3 mt-4">
+            <button class="btn btn-dark btn-lg" (click)="addToCart()">Add to cart</button>
+            <span class="text-success" role="status" *ngIf="cartMessage">{{ cartMessage }}</span>
+          </div>
         </div>
     </div>
-    <div class="text-center mt-5">
-    <app-spinner *ngIf= "!loading"></app-spinner>
-</div>
+</section>
+
+<div class="text-center py-5" *ngIf="loading"><app-spinner></app-spinner></div>
+<div class="container py-5" *ngIf="errorMessage">
+  <div class="alert alert-danger d-flex justify-content-between align-items-center">
+    <span>{{ errorMessage }}</span>
+    <button class="btn btn-outline-danger" (click)="getProduct()">Try again</button>
+  </div>
 </div>

@@ -1,14 +1,12 @@
 
-<nav>
+<nav aria-label="Main navigation">
     <div class="container">
     <div class="content">
-        <h2 class="logo">market</h2>
+        <a class="logo" routerLink="/products">MARKET</a>
         <ul>
-            
-            <li routerLink="/">products</li>
-            <li routerLink="/cart">cart</li>
+            <li><a routerLink="/products" routerLinkActive="active">Shop</a></li>
+            <li><a routerLink="/cart" routerLinkActive="active">Cart <span class="cart-count">{{ cartCount$ | async }}</span></a></li>
         </ul>
     </div>
 </div>
 </nav>
-

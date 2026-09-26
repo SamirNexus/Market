@@ -1,25 +1,50 @@
 nav{
-    background: linear-gradient(to right,#950b0b ,#440606 );
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #141414;
     color: #fff;
     
     .content{
          display: flex;
          justify-content:space-between;
          align-items:center;
-         padding: 10px 0;
+         padding: 16px 0;
+
+    .logo {
+        color: #fff;
+        font-size: 1.15rem;
+        font-weight: 800;
+        letter-spacing: 0.18em;
+        text-decoration: none;
+    }
         
     ul
     {
         list-style: none ;
         display: flex;
         justify-content:space-between;
-        width: 20%;
+        gap: 24px;
         margin: 0;
          li{
-            font-size: 22px;
-            cursor: pointer;
-            color: #fff;
-            text-decoration: none;  
+            a {
+                color: #ddd;
+                font-size: 0.95rem;
+                text-decoration: none;
+            }
+            a.active { color: #fff; }
+            .cart-count {
+                display: inline-grid;
+                min-width: 22px;
+                height: 22px;
+                margin-left: 4px;
+                place-items: center;
+                color: #141414;
+                background: #fff;
+                border-radius: 999px;
+                font-size: 0.72rem;
+                font-weight: 800;
+            }
     }
     }
     }

@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { Product } from '../models/product';
 
 
 
@@ -8,19 +10,23 @@ import { HttpClient } from '@angular/common/http';
   providedIn: 'root'
 })
 export class ProductsService {
+  private readonly apiUrl = 'https://fakestoreapi.com/products';
 
-  constructor(private http:HttpClient) { }
-//All api work under unperlla (httpclient ==> http client moudule )
-  getAllproducts(){
-    return this.http.get('https://fakestoreapi.com/products')
+  constructor(private http: HttpClient) {}
+
+  getAllProducts(): Observable<Product[]> {
+    return this.http.get<Product[]>(this.apiUrl);
   }
-  getAllCategories(){
-    return this.http.get('https://fakestoreapi.com/products/categories')
+
+  getAllCategories(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.apiUrl}/categories`);
   }
-  getProductsInASpecificCategory(keyword:string){
-    return this.http.get('https://fakestoreapi.com/products/category/'+ keyword)
+
+  getProductsInCategory(category: string): Observable<Product[]> {
+    return this.http.get<Product[]>(`${this.apiUrl}/category/${encodeURIComponent(category)}`);
   }
-  getProductById(id:any){
-    return this.http.get('https://fakestoreapi.com/products/'+id)
+
+  getProductById(id: number): Observable<Product> {
+    return this.http.get<Product>(`${this.apiUrl}/${id}`);
   }
 }

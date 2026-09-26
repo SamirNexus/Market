@@ -1,6 +1,8 @@
 import { Component,OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ProductsService } from '../../services/products.service';
+import { Product } from '../../models/product';
+import { CartsService } from '../../../carts/services/carts.service';
 
 @Component({
   selector: 'app-product-details',
@@ -8,26 +10,39 @@ import { ProductsService } from '../../services/products.service';
   styleUrls: ['./product-details.component.scss']
 })
 export class ProductDetailsComponent  implements OnInit {
-  id:any;
-  data:any;
-  loading:boolean = false;//activatedrout ==> to rout id details 
-  constructor(private route:ActivatedRoute,private service:ProductsService ){
-    // to hold id 
-   this.id = this.route.snapshot.paramMap.get("id")
-  }
+  id = Number(this.route.snapshot.paramMap.get('id'));
+  data?: Product;
+  loading = true;
+  errorMessage = '';
+  cartMessage = '';
+
+  constructor(
+    private route: ActivatedRoute,
+    private service: ProductsService,
+    private cartsService: CartsService,
+  ) {}
   ngOnInit(): void {
-    this.loading = true
-    this.getProduct()
+    this.getProduct();
   }
-  getProduct(){
-    this.loading=false
-    this.service.getProductById(this.id).subscribe(res =>{
-     this.loading = true
-      this.data= res},
-      error =>{
-        this.loading = false
-        alert(error)
-      }
-      )
+
+  getProduct(): void {
+    this.loading = true;
+    this.errorMessage = '';
+    this.service.getProductById(this.id).subscribe({
+      next: (product) => {
+        this.data = product;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+        this.errorMessage = 'This product could not be loaded. Please try again.';
+      },
+    });
+  }
+
+  addToCart(): void {
+    if (!this.data) return;
+    this.cartsService.addItem(this.data, 1);
+    this.cartMessage = 'Added to your cart.';
   }
 }
