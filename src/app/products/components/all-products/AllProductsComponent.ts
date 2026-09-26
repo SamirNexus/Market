@@ -14,6 +14,7 @@ export class AllProductsComponent implements OnInit {
   loading = false;
   errorMessage = '';
   searchTerm = '';
+  sortBy = 'featured';
   cartMessage = '';
 
   constructor(
@@ -28,10 +29,16 @@ export class AllProductsComponent implements OnInit {
 
   get visibleProducts(): Product[] {
     const query = this.searchTerm.trim().toLowerCase();
-    if (!query) return this.products;
-    return this.products.filter((product) =>
+    const filteredProducts = query ? this.products.filter((product) =>
       `${product.title} ${product.category} ${product.description}`.toLowerCase().includes(query),
-    );
+    ) : [...this.products];
+
+    return filteredProducts.sort((first, second) => {
+      if (this.sortBy === 'price-low') return first.price - second.price;
+      if (this.sortBy === 'price-high') return second.price - first.price;
+      if (this.sortBy === 'rating') return second.rating.rate - first.rating.rate;
+      return first.id - second.id;
+    });
   }
 
   getProducts() {
