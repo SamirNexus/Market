@@ -16,7 +16,16 @@
         <label class="visually-hidden" for="product-search">Search products</label>
         <input id="product-search" class="form-control" type="search" placeholder="Search products..." [(ngModel)]="searchTerm">
       </div>
-      <app-select [data]="categories" [title]="'All categories'" [controlId]="'category-filter'" (selectedValue)="filterCategory($event)"></app-select>
+      <div>
+        <app-select
+          *ngIf="!categoryError"
+          [data]="categories"
+          [title]="'All categories'"
+          [controlId]="'category-filter'"
+          (selectedValue)="filterCategory($event)">
+        </app-select>
+        <small class="text-muted d-block mt-1" role="status" *ngIf="categoryError">{{ categoryError }}</small>
+      </div>
     </div>
   </div>
 

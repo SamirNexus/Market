@@ -1,21 +1,17 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { BehaviorSubject } from 'rxjs';
 import { HeaderComponent } from './header.component';
+import { CartsService } from '../../../carts/services/carts.service';
 
 describe('HeaderComponent', () => {
-  let component: HeaderComponent;
-  let fixture: ComponentFixture<HeaderComponent>;
+  it('exposes the cart count stream from the cart service', () => {
+    const cartsService = jasmine.createSpyObj<CartsService>(
+      'CartsService',
+      [],
+      { count$: new BehaviorSubject<number>(3) },
+    );
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      declarations: [HeaderComponent]
-    });
-    fixture = TestBed.createComponent(HeaderComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+    const component = new HeaderComponent(cartsService);
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+    expect(component.cartCount$.value).toBe(3);
   });
 });

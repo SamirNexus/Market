@@ -13,6 +13,7 @@ export class AllProductsComponent implements OnInit {
   categories: string[] = [];
   loading = false;
   errorMessage = '';
+  categoryError = '';
   searchTerm = '';
   sortBy = 'featured';
   cartMessage = '';
@@ -41,14 +42,18 @@ export class AllProductsComponent implements OnInit {
     });
   }
 
-  getProducts() {
+  getProducts(): void {
     this.loadProducts(this.productsService.getAllProducts());
   }
 
-  getCategories() {
+  getCategories(): void {
+    this.categoryError = '';
     this.productsService.getAllCategories().subscribe({
       next: (categories) => (this.categories = categories),
-      error: () => (this.categories = []),
+      error: () => {
+        this.categories = [];
+        this.categoryError = 'Categories are temporarily unavailable.';
+      },
     });
   }
 
