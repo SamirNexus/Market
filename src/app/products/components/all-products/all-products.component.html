@@ -3,11 +3,11 @@
     <div class="catalog__copy">
       <span class="catalog__eyebrow">CURATED ESSENTIALS</span>
       <h1>Products for everyday life</h1>
-      <p>Discover quality picks across electronics, fashion, and accessories.</p>
-      <div class="catalog__benefits" aria-label="Shopping benefits">
-        <span>✓ Curated quality</span>
-        <span>✓ Secure checkout</span>
-        <span>✓ Easy returns</span>
+      <p>Explore quality picks across electronics, fashion, and accessories.</p>
+      <div class="catalog__benefits" aria-label="Shopping features">
+        <span>✓ Browse & filter</span>
+        <span>✓ Real-time cart</span>
+        <span>✓ Demo checkout</span>
       </div>
     </div>
     <div class="catalog__controls">
@@ -16,7 +16,7 @@
         <label class="visually-hidden" for="product-search">Search products</label>
         <input id="product-search" class="form-control" type="search" placeholder="Search products..." [(ngModel)]="searchTerm">
       </div>
-      <app-select [data]="categories" [title]="'All categories'" (selectedValue)="filterCategory($event)"></app-select>
+      <app-select [data]="categories" [title]="'All categories'" [controlId]="'category-filter'" (selectedValue)="filterCategory($event)"></app-select>
     </div>
   </div>
 

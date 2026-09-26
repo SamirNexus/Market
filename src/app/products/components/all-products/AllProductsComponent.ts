@@ -52,8 +52,7 @@ export class AllProductsComponent implements OnInit {
     });
   }
 
-  filterCategory(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value;
+  filterCategory(value: string): void {
     value === 'All' ? this.getProducts() : this.getProductsByCategory(value);
   }
 

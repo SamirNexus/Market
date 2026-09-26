@@ -8,12 +8,10 @@ Market is a responsive Angular e-commerce interface that demonstrates modern fro
 
 ## Core features
 
-- Product listing from API with client-side search and filtering
-- Product category browsing and discovery
+- Product listing from API with client-side search and sorting, plus API-based category filtering
 - Product details page with routing
 - Shopping cart with add, remove, and quantity controls
 - Cart persistence using localStorage
-- Sorted product view (by rating, price, featured)
 - Loading, error, and empty states
 - Responsive design for desktop and mobile
 - Demo checkout flow (no payment processing)
@@ -83,11 +81,11 @@ The production build is validated automatically on every push and pull request t
 
 - Converted a design into a component-based Angular single-page application
 - Integrated a public REST API through a dedicated typed service
-- Implemented client-side product filtering and sorting
+- Implemented client-side search and sorting with API-driven category filtering
 - Managed application state using RxJS `BehaviorSubject` for reactive cart updates
 - Designed responsive layouts using Bootstrap and custom SCSS
 - Demonstrated error handling, loading states, and empty states
-- Configured CI/CD with GitHub Actions for automated testing and deployment
+- Configured CI/CD with GitHub Actions for automated production builds and deployment
 
 ## Author
 
