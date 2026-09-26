@@ -4,41 +4,58 @@
 [![Angular](https://img.shields.io/badge/Angular-16-DD0031?logo=angular&logoColor=white)](https://angular.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-Market is a responsive Angular e-commerce experience built from a Figma design. It demonstrates product discovery, product details, configurable options, currency selection, and cart interactions using a modular feature-based structure.
+Market is a responsive Angular e-commerce interface that demonstrates modern front-end architecture. It fetches real product data from the Fake Store API, integrating API requests, client-side filtering, cart persistence, and responsive design.
 
 ## Core features
 
-- Product listing and category filtering
-- Product details with API-driven content
-- Configurable product attributes
-- Cart page and quick-access cart overlay
-- Add, remove, and update product quantities
-- Currency selection across the shopping flow
-- Loading states and reusable shared components
-- Responsive desktop and mobile layouts
-- Fallback routing to the product catalog
+- Product listing from API with client-side search and filtering
+- Product category browsing and discovery
+- Product details page with routing
+- Shopping cart with add, remove, and quantity controls
+- Cart persistence using localStorage
+- Sorted product view (by rating, price, featured)
+- Loading, error, and empty states
+- Responsive design for desktop and mobile
+- Demo checkout flow (no payment processing)
+
+## What this is not
+
+This is a portfolio demonstration project, not a production e-commerce application:
+
+- The Fake Store API provides all product data; there is no custom backend.
+- Checkout is a mock flow that does not process real payments.
+- There is no user authentication, order history, or account management.
+- Product options, currency selection, and advanced filtering are not implemented.
+- The application is a client-side Angular single-page application.
 
 ## Architecture
 
-The application separates products, cart behavior, and shared UI into Angular feature modules. API communication is isolated in injectable services, while reusable controls such as the header, select input, and loading spinner live in the shared module.
+The application is organized into feature-focused folders with clear separation of concerns:
 
 ```text
 src/app/
-├── products/   # Catalog, product cards, details, and product API service
-├── carts/      # Cart UI and cart service
-├── shared/     # Header, select, spinner, and shared state
+├── products/   # Catalog and product detail components, API service, and models
+├── carts/      # Cart component and state management service
+├── shared/     # Reusable UI components (header, spinner, select) and utilities
 └── app-routing.module.ts
 ```
+
+Routes:
+- `/products` — Product catalog with search, filtering, and sorting
+- `/details/:id` — Product detail page
+- `/cart` — Shopping cart review and checkout
+- `**` — Fallback redirect to catalog
 
 ## Tech stack
 
 - Angular 16
 - TypeScript 5
-- RxJS
-- Angular Router and HttpClient
-- Bootstrap 5
-- SCSS
-- Fake Store API
+- RxJS for reactive state
+- Angular Router for navigation
+- Angular HttpClient for API requests
+- Bootstrap 5 for responsive layout
+- SCSS for component styling
+- Fake Store API for product data
 
 ## Run locally
 
@@ -64,10 +81,13 @@ The production build is validated automatically on every push and pull request t
 
 ## Portfolio highlights
 
-- Converted a Figma shopping flow into a component-based Angular application
-- Integrated product and category endpoints through dedicated services
-- Kept cart, product, and shared concerns separated into feature modules
-- Implemented responsive catalog, details, and cart experiences
+- Converted a design into a component-based Angular single-page application
+- Integrated a public REST API through a dedicated typed service
+- Implemented client-side product filtering and sorting
+- Managed application state using RxJS `BehaviorSubject` for reactive cart updates
+- Designed responsive layouts using Bootstrap and custom SCSS
+- Demonstrated error handling, loading states, and empty states
+- Configured CI/CD with GitHub Actions for automated testing and deployment
 
 ## Author
 
