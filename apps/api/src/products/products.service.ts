@@ -27,7 +27,13 @@ export class ProductsService {
   create(input: CreateProductDto) {
     return this.prisma.product.create({
       data: {
-        ...input,
+        title: input.title,
+        slug: input.slug,
+        sku: input.sku,
+        price: input.price,
+        stock: input.stock ?? 0,
+        description: input.description,
+        category: input.category,
         image: input.image ?? null,
       },
     });
@@ -47,7 +53,10 @@ export class ProductsService {
 
     return this.prisma.product.update({
       where: { id },
-      data: { isActive: false },
+      data: {
+        isActive: false,
+        status: 'ARCHIVED',
+      },
     });
   }
 }
