@@ -2,7 +2,7 @@
   <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
       <h2 class="h4 mb-1">Product catalog</h2>
-      <p class="text-muted mb-0">Create, update, and remove catalog items.</p>
+      <p class="text-muted mb-0">Create, update, and archive catalog items.</p>
     </div>
     <button
       type="button"
@@ -31,16 +31,20 @@
         <tr class="text-center">
           <th scope="col">Image</th>
           <th scope="col">Product name</th>
+          <th scope="col">SKU</th>
           <th scope="col">Category</th>
+          <th scope="col">Stock</th>
           <th scope="col">Price</th>
           <th scope="col">Actions</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let item of products">
-          <td><img [src]="item.image" [alt]="item.title"></td>
+          <td><img [src]="item.image || ''" [alt]="item.title"></td>
           <td>{{ item.title }}</td>
+          <td>{{ item.sku || '—' }}</td>
           <td>{{ item.category }}</td>
+          <td>{{ item.stock ?? '—' }}</td>
           <td>{{ item.price | currency:'USD' }}</td>
           <td class="text-nowrap">
             <button
@@ -55,7 +59,7 @@
               type="button"
               class="btn btn-outline-danger btn-sm"
               (click)="deleteProduct(item)">
-              Delete
+              Archive
             </button>
           </td>
         </tr>
@@ -79,17 +83,32 @@
       <div class="modal-body">
         <form [formGroup]="form" (ngSubmit)="saveProduct()">
           <div class="row">
-            <div class="col-md-4 col-sm-12">
+            <div class="col-md-6 col-sm-12">
               <label for="product-title">Title</label>
               <input id="product-title" type="text" formControlName="title" class="form-control" placeholder="Product title">
             </div>
 
-            <div class="col-md-4 col-sm-12">
-              <label for="product-price">Price</label>
-              <input id="product-price" type="number" min="0" formControlName="price" class="form-control" placeholder="Price">
+            <div class="col-md-3 col-sm-12">
+              <label for="product-sku">SKU</label>
+              <input id="product-sku" type="text" formControlName="sku" class="form-control" placeholder="CAM-001">
             </div>
 
-            <div class="col-md-4 col-sm-12">
+            <div class="col-md-3 col-sm-12">
+              <label for="product-slug">Slug</label>
+              <input id="product-slug" type="text" formControlName="slug" class="form-control" placeholder="wireless-camera">
+            </div>
+
+            <div class="col-md-4 col-sm-12 mt-3">
+              <label for="product-price">Price</label>
+              <input id="product-price" type="number" min="0" step="0.01" formControlName="price" class="form-control" placeholder="Price">
+            </div>
+
+            <div class="col-md-4 col-sm-12 mt-3">
+              <label for="product-stock">Stock</label>
+              <input id="product-stock" type="number" min="0" step="1" formControlName="stock" class="form-control" placeholder="Stock quantity">
+            </div>
+
+            <div class="col-md-4 col-sm-12 mt-3">
               <app-select
                 [data]="categories"
                 [title]="'Category'"
@@ -101,13 +120,13 @@
               <small class="text-danger d-block mt-1" *ngIf="categoryError">{{ categoryError }}</small>
             </div>
 
-            <div class="col-md-4 col-sm-12 mt-3">
-              <label for="product-image">Image</label>
-              <img *ngIf="base64" [src]="base64" alt="Selected product preview">
-              <input id="product-image" type="file" class="form-control" accept="image/*" (change)="getImagePath($event)">
+            <div class="col-md-6 col-sm-12 mt-3">
+              <label for="product-image">Image URL</label>
+              <input id="product-image" type="url" formControlName="image" class="form-control" placeholder="https://...">
+              <img class="mt-3" *ngIf="form.value.image" [src]="form.value.image" alt="Product preview">
             </div>
 
-            <div class="col-md-8 col-sm-12 mt-3">
+            <div class="col-md-6 col-sm-12 mt-3">
               <label for="product-description">Description</label>
               <textarea
                 id="product-description"
