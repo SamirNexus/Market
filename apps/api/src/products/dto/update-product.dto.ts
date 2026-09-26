@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
 import {
+  IsInt,
   IsNumber,
   IsOptional,
   IsString,
@@ -13,10 +14,24 @@ export class UpdateProductDto {
   title?: string;
 
   @IsOptional()
+  @IsString()
+  slug?: string;
+
+  @IsOptional()
+  @IsString()
+  sku?: string;
+
+  @IsOptional()
   @Type(() => Number)
   @IsNumber()
   @Min(0)
   price?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  stock?: number;
 
   @IsOptional()
   @IsString()
