@@ -23,10 +23,10 @@ The goal is one reusable, configurable commerce product for small and medium mer
 - [x] Add initial product CRUD
 - [x] Add validation and environment configuration
 - [x] Add local PostgreSQL service with Docker Compose
-- [ ] Commit deterministic API dependency lockfile
-- [ ] Add API build/test/migration CI
-- [ ] Add initial database migration
-- [ ] Add seed data
+- [x] Commit deterministic API dependency lockfile
+- [x] Add API build/test/migration CI
+- [x] Add initial database migration
+- [x] Add seed data
 - [ ] Connect admin catalog CRUD to owned API
 - [ ] Connect storefront catalog reads to owned API
 - [ ] Add inventory rules
