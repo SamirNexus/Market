@@ -1,21 +1,15 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { SelectComponent } from './select.component';
 
 describe('SelectComponent', () => {
-  let component: SelectComponent;
-  let fixture: ComponentFixture<SelectComponent>;
+  it('emits the selected string value', () => {
+    const component = new SelectComponent();
+    let selected = '';
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      declarations: [SelectComponent]
-    });
-    fixture = TestBed.createComponent(SelectComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+    component.selectedValue.subscribe((value) => (selected = value));
+    component.detectChanges({
+      target: { value: 'electronics' },
+    } as unknown as Event);
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+    expect(selected).toBe('electronics');
   });
 });
