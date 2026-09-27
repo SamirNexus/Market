@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { HealthModule } from './health/health.module';
+import { InventoryModule } from './inventory/inventory.module';
+import { OrdersModule } from './orders/orders.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProductsModule } from './products/products.module';
 
@@ -13,6 +15,8 @@ import { ProductsModule } from './products/products.module';
     PrismaModule,
     HealthModule,
     ProductsModule,
+    InventoryModule,
+    OrdersModule,
   ],
 })
 export class AppModule {}
