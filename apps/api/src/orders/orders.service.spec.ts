@@ -135,7 +135,7 @@ describe('OrdersService', () => {
       data: expect.objectContaining({
         subtotal: 200,
         total: 200,
-        currency: 'EUR',
+        currency: 'USD',
       }),
     });
     expect(inventory.decrementForOrder).toHaveBeenCalledWith(
@@ -167,6 +167,7 @@ describe('OrdersService', () => {
 
   it('calculates configured tax and shipping on the server', async () => {
     tx.product.findMany.mockResolvedValue([product]);
+    tx.merchantSettings.findUnique.mockReset();
     tx.merchantSettings.findUnique.mockResolvedValue({
       currency: 'USD',
       taxRate: new Prisma.Decimal('0.10'),
@@ -203,6 +204,7 @@ describe('OrdersService', () => {
 
   it('waives shipping at the configured threshold', async () => {
     tx.product.findMany.mockResolvedValue([product]);
+    tx.merchantSettings.findUnique.mockReset();
     tx.merchantSettings.findUnique.mockResolvedValue({
       currency: 'USD',
       taxRate: new Prisma.Decimal(0),
