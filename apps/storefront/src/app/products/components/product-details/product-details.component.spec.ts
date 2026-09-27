@@ -10,6 +10,7 @@ describe('ProductDetailsComponent', () => {
   let productsService: jasmine.SpyObj<ProductsService>;
   let cartsService: jasmine.SpyObj<CartsService>;
   let paramMap$: Subject<ParamMap>;
+  const settings = { currency$: of('EUR') };
 
   const productFor = (id: string): Product => ({
     id,
@@ -34,7 +35,12 @@ describe('ProductDetailsComponent', () => {
       paramMap: paramMap$.asObservable(),
     } as ActivatedRoute;
 
-    component = new ProductDetailsComponent(route, productsService, cartsService);
+    component = new ProductDetailsComponent(
+      route,
+      productsService,
+      cartsService,
+      settings as never,
+    );
     component.ngOnInit();
   });
 

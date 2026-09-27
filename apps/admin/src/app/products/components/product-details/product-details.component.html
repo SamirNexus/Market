@@ -17,7 +17,7 @@
           <li><strong>Description:</strong> {{ data.description }}</li>
           <li *ngIf="data.rating"><strong>Rating:</strong> {{ data.rating.rate }}</li>
           <li *ngIf="data.rating"><strong>Rating count:</strong> {{ data.rating.count }}</li>
-          <li><strong>Price:</strong> {{ data.price | currency:'USD' }}</li>
+          <li><strong>Price:</strong> {{ data.price | currency:currency }}</li>
         </ul>
       </div>
     </div>

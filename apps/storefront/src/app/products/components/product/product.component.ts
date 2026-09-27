@@ -8,6 +8,7 @@ import { Product } from '../../models/product';
 })
 export class ProductComponent {
   @Input() data!: Product;
+  @Input() currency = 'USD';
   @Output() item = new EventEmitter<{ item: Product; quantity: number }>();
 
   selectingQuantity = false;

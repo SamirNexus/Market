@@ -8,7 +8,7 @@ Market is one commerce product delivered through three coordinated applications:
 
 Commercially this is **one product**. Technically the customer UI, staff UI, and backend stay independently deployable so security boundaries, scaling, testing, and releases remain manageable.
 
-> Market is being productized in stages. Catalog persistence, inventory, order workflows, staff authentication, RBAC, and audit foundations are implemented. Payment processing, merchant configuration, production deployment, customer identity, and end-to-end purchase coverage are still explicit work before the product is described as production-ready.
+> Market is being productized in stages. Catalog persistence, inventory, order workflows, staff authentication, RBAC, audit foundations, and core merchant settings are implemented. Payment processing, tax/shipping configuration, production cutover, customer identity, and end-to-end purchase coverage are still explicit work before the product is described as production-ready.
 
 ## Applications
 
@@ -91,6 +91,7 @@ The API is the source of truth for pricing, stock, order state, permissions, and
 - runtime-configurable frontend API endpoints
 - production Docker images for storefront, admin, API, and migrations
 - production Compose model with health checks and migration gating
+- persistent merchant settings for store name, support email, branding color/logo, currency, and locale
 
 ## Local development
 

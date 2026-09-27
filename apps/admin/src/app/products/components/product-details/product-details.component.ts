@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Product, ProductId } from '../../models/product';
 import { ProductsService } from '../../services/products.service';
+import { SettingsService } from '../../../settings/services/settings.service';
 
 @Component({
   selector: 'app-product-details',
@@ -12,13 +13,21 @@ export class ProductDetailsComponent implements OnInit {
   data?: Product;
   loading = true;
   errorMessage = '';
+  currency = 'USD';
 
   constructor(
     private route: ActivatedRoute,
     private service: ProductsService,
+    private settingsService: SettingsService,
   ) {}
 
   ngOnInit(): void {
+    this.settingsService.get().subscribe({
+      next: (settings) => {
+        this.currency = settings.currency;
+      },
+    });
+
     this.route.paramMap.subscribe((params) => {
       const id = params.get('id')?.trim();
 

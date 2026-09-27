@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CartsService } from '../../../carts/services/carts.service';
 import { Product } from '../../models/product';
 import { ProductsService } from '../../services/products.service';
+import { StoreSettingsService } from '../../../shared/services/store-settings.service';
 
 @Component({
   selector: 'app-all-products',
@@ -17,10 +18,12 @@ export class AllProductsComponent implements OnInit {
   searchTerm = '';
   sortBy = 'featured';
   cartMessage = '';
+  readonly currency$ = this.settings.currency$;
 
   constructor(
     private productsService: ProductsService,
     private cartsService: CartsService,
+    private settings: StoreSettingsService,
   ) {}
 
   ngOnInit(): void {

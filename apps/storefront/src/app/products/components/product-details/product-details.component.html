@@ -13,7 +13,7 @@
         {{ data.stock > 0 ? (data.stock + ' available') : 'Out of stock' }}
       </div>
       <p>{{ data.description }}</p>
-      <strong class="product-details__price">{{ data.price | currency:'USD' }}</strong>
+      <strong class="product-details__price">{{ data.price | currency:((currency$ | async) || 'USD') }}</strong>
       <div class="d-flex align-items-center gap-3 mt-4">
         <button
           class="btn btn-dark btn-lg"

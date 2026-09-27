@@ -40,16 +40,16 @@
             +
           </button>
         </div>
-        <strong>{{ entry.item.price * entry.quantity | currency:'USD' }}</strong>
+        <strong>{{ entry.item.price * entry.quantity | currency:((currency$ | async) || 'USD') }}</strong>
       </article>
     </div>
 
     <aside class="col-lg-4">
       <div class="order-summary">
         <h2>Order summary</h2>
-        <div><span>Estimated subtotal</span><strong>{{ totalPrice | currency:'USD' }}</strong></div>
+        <div><span>Estimated subtotal</span><strong>{{ totalPrice | currency:((currency$ | async) || 'USD') }}</strong></div>
         <div><span>Shipping</span><strong>Free</strong></div>
-        <div class="order-summary__total"><span>Estimated total</span><strong>{{ totalPrice | currency:'USD' }}</strong></div>
+        <div class="order-summary__total"><span>Estimated total</span><strong>{{ totalPrice | currency:((currency$ | async) || 'USD') }}</strong></div>
         <button class="btn btn-dark btn-lg w-100" [disabled]="submitting" (click)="placeOrder()">
           {{ submitting ? 'Placing order…' : 'Place order' }}
         </button>

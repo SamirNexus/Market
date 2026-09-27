@@ -8,6 +8,7 @@ describe('AllProductsComponent', () => {
   let component: AllProductsComponent;
   let productsService: jasmine.SpyObj<ProductsService>;
   let cartsService: jasmine.SpyObj<CartsService>;
+  const settings = { currency$: of('EUR') };
 
   const products: Product[] = [
     {
@@ -49,7 +50,11 @@ describe('AllProductsComponent', () => {
     productsService.getProductsInCategory.and.returnValue(of([products[0]]));
     cartsService.addItem.and.returnValue('added');
 
-    component = new AllProductsComponent(productsService, cartsService);
+    component = new AllProductsComponent(
+      productsService,
+      cartsService,
+      settings as never,
+    );
   });
 
   it('filters products by search text', () => {

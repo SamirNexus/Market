@@ -45,7 +45,7 @@
           <td>{{ item.sku || '—' }}</td>
           <td>{{ item.category }}</td>
           <td>{{ item.stock ?? '—' }}</td>
-          <td>{{ item.price | currency:'USD' }}</td>
+          <td>{{ item.price | currency:currency }}</td>
           <td class="text-nowrap">
             <button
               type="button"

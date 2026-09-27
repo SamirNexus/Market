@@ -156,3 +156,16 @@ model AuditLog {
   @@index([actorId, createdAt])
   @@index([entity, entityId])
 }
+
+
+model MerchantSettings {
+  id           String   @id @default("default")
+  storeName    String   @default("Market")
+  supportEmail String?
+  currency     String   @default("USD")
+  locale       String   @default("en-US")
+  logoUrl      String?
+  primaryColor String   @default("#111827")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

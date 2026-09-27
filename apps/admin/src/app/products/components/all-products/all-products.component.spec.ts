@@ -7,6 +7,19 @@ import { AllProductsComponent } from './all-products.component';
 describe('AllProductsComponent', () => {
   let component: AllProductsComponent;
   let service: jasmine.SpyObj<ProductsService>;
+  const settingsService = {
+    get: jasmine.createSpy('get').and.returnValue(of({
+      id: 'default',
+      storeName: 'Market',
+      supportEmail: null,
+      currency: 'EUR',
+      locale: 'en-US',
+      logoUrl: null,
+      primaryColor: '#111827',
+      createdAt: '',
+      updatedAt: '',
+    })),
+  };
 
   const product: Product = {
     id: 'product-1',
@@ -35,7 +48,11 @@ describe('AllProductsComponent', () => {
     service.updateProduct.and.returnValue(of(product));
     service.deleteProduct.and.returnValue(of({ ...product, status: 'ARCHIVED' }));
 
-    component = new AllProductsComponent(service, new FormBuilder());
+    component = new AllProductsComponent(
+      service,
+      new FormBuilder(),
+      settingsService as never,
+    );
     component.ngOnInit();
   });
 
@@ -43,6 +60,7 @@ describe('AllProductsComponent', () => {
     expect(component.products).toEqual([product]);
     expect(component.categories).toEqual(['electronics']);
     expect(component.loading).toBeFalse();
+    expect(component.currency).toBe('EUR');
   });
 
   it('switches into edit mode and submits an update', () => {

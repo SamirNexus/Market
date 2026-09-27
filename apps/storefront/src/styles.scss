@@ -1,3 +1,7 @@
+:root {
+  --market-primary: #171717;
+}
+
 * { box-sizing: border-box; }
 
 html { scroll-behavior: smooth; }
@@ -13,8 +17,8 @@ body {
 button, input, select { font: inherit; }
 
 .btn-dark {
-  --bs-btn-bg: #171717;
-  --bs-btn-border-color: #171717;
-  --bs-btn-hover-bg: #333;
-  --bs-btn-hover-border-color: #333;
+  --bs-btn-bg: var(--market-primary);
+  --bs-btn-border-color: var(--market-primary);
+  --bs-btn-hover-bg: var(--market-primary);
+  --bs-btn-hover-border-color: var(--market-primary);
 }

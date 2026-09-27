@@ -51,7 +51,11 @@
 
   <div class="row g-4" *ngIf="!loading && !errorMessage">
     <div *ngFor="let product of visibleProducts" class="col-xl-3 col-lg-4 col-md-6">
-      <app-product [data]="product" (item)="addToCart($event)"></app-product>
+      <app-product
+        [data]="product"
+        [currency]="(currency$ | async) || 'USD'"
+        (item)="addToCart($event)">
+      </app-product>
     </div>
   </div>
 

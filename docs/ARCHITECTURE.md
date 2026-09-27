@@ -110,3 +110,12 @@ Production artifacts are containerized independently while remaining one system:
 - production Compose requires explicit secrets and exact browser origins
 
 See `docs/DEPLOYMENT.md` for the deployment and recovery runbook.
+
+
+## Merchant configuration
+
+Merchant identity and regional defaults are stored in a single durable `MerchantSettings` record. Public storefront reads expose safe presentation settings, while changes require ADMIN or OWNER authorization and are audit logged.
+
+Current configurable fields are store name, support email, logo URL, primary color, currency, and locale. New orders snapshot the configured currency at creation time, so historical orders keep their original currency even if the merchant later changes settings.
+
+Changing the currency code does **not** convert existing numeric catalog prices. Automatic FX conversion is intentionally out of scope; a merchant changing currency must review or reprice the catalog. Theme colors are configurable, but automated contrast/accessibility validation remains part of the accessibility review phase.
