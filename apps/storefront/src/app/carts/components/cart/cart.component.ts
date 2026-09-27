@@ -109,7 +109,7 @@ export class CartComponent implements OnInit {
   private startPayment(orderId: string): void {
     this.paymentPending = true;
 
-    this.service.createPayment(orderId, 'manual').subscribe({
+    this.service.createPayment(orderId).subscribe({
       next: (payment) => {
         this.submitting = false;
         this.paymentPending = false;
