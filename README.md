@@ -160,6 +160,10 @@ See:
 - `docs/RELEASE_RUNBOOK.md`
 - `docs/LAUNCH_CHECKLIST.md`
 
+## Portfolio presentation
+
+Recruiter/buyer positioning, LinkedIn copy, and recommended final media are maintained in `docs/PORTFOLIO.md`.
+
 ## Author
 
 **Mohamed Samir** — Front-End Developer  
