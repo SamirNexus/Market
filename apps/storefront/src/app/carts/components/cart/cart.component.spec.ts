@@ -45,9 +45,23 @@ describe('CartComponent', () => {
     cart$ = new BehaviorSubject<CartItem[]>(cart);
     cartsService = jasmine.createSpyObj<CartsService>(
       'CartsService',
-      ['updateQuantity', 'removeItem', 'clear', 'createOrder'],
+      ['updateQuantity', 'removeItem', 'clear', 'createOrder', 'createPayment'],
       { cart$: cart$.asObservable() },
     );
+    cartsService.createPayment.and.returnValue(of({
+      id: 'payment-1',
+      orderId: 'order-1',
+      provider: 'manual',
+      providerPaymentId: null,
+      status: 'PENDING',
+      amount: 198,
+      currency: 'USD',
+      checkoutUrl: null,
+      failureCode: null,
+      failureMessage: null,
+      createdAt: '2026-09-27T00:00:00.000Z',
+      updatedAt: '2026-09-27T00:00:00.000Z',
+    }));
     cartsService.createOrder.and.returnValue(of({
       id: 'order-1',
       orderNo: 'MKT-1',
@@ -92,6 +106,7 @@ describe('CartComponent', () => {
     component.placeOrder();
 
     expect(cartsService.createOrder).toHaveBeenCalledWith();
+    expect(cartsService.createPayment).toHaveBeenCalledWith('order-1', 'manual');
     expect(cartsService.clear).toHaveBeenCalled();
     expect(component.confirmedOrderNo).toBe('MKT-1');
     expect(component.confirmedTotal).toBe(198);
