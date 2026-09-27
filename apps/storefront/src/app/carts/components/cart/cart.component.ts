@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CartItem } from '../../../products/models/product';
 import { CartsService } from '../../services/carts.service';
+import { StoreSettingsService } from '../../../shared/services/store-settings.service';
 
 @Component({
   selector: 'app-cart',
@@ -14,8 +15,12 @@ export class CartComponent implements OnInit {
   confirmedOrderNo = '';
   confirmedTotal = 0;
   confirmedCurrency = 'USD';
+  readonly currency$ = this.settings.currency$;
 
-  constructor(private service: CartsService) {}
+  constructor(
+    private service: CartsService,
+    private settings: StoreSettingsService,
+  ) {}
 
   get totalPrice(): number {
     return this.cartProducts.reduce(
