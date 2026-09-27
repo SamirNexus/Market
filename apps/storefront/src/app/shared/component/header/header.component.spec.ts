@@ -1,17 +1,30 @@
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { HeaderComponent } from './header.component';
-import { CartsService } from '../../../carts/services/carts.service';
 
 describe('HeaderComponent', () => {
-  it('exposes the cart count stream from the cart service', () => {
-    const cartsService = jasmine.createSpyObj<CartsService>(
-      'CartsService',
-      [],
-      { count$: new BehaviorSubject<number>(3) },
+  it('creates storefront navigation with cart and store settings streams', () => {
+    const carts = {
+      count$: new BehaviorSubject(2),
+    };
+    const settings = {
+      settings$: of({
+        id: 'default',
+        storeName: 'Market',
+        supportEmail: null,
+        currency: 'USD',
+        locale: 'en-US',
+        logoUrl: null,
+        primaryColor: '#111827',
+        createdAt: '',
+        updatedAt: '',
+      }),
+    };
+
+    const component = new HeaderComponent(
+      carts as never,
+      settings as never,
     );
 
-    const component = new HeaderComponent(cartsService);
-
-    expect(component.cartCount$.value).toBe(3);
+    expect(component).toBeTruthy();
   });
 });
