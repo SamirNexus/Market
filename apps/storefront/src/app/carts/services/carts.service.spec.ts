@@ -2,6 +2,7 @@ import {
   HttpClientTestingModule,
   HttpTestingController,
 } from '@angular/common/http/testing';
+import { HttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { Product } from '../../products/models/product';
 import { CartsService } from './carts.service';
@@ -9,6 +10,7 @@ import { CartsService } from './carts.service';
 describe('CartsService', () => {
   let service: CartsService;
   let http: HttpTestingController;
+  let client: HttpClient;
 
   const product: Product = {
     id: 'product-1',
@@ -16,7 +18,7 @@ describe('CartsService', () => {
     slug: 'test-product',
     sku: 'TEST-001',
     stock: 5,
-    status: 'ACTIVE' as const,
+    status: 'ACTIVE',
     price: 99,
     category: 'electronics',
     description: 'Test description',
@@ -28,8 +30,10 @@ describe('CartsService', () => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
     });
+
     http = TestBed.inject(HttpTestingController);
-    service = TestBed.inject(CartsService);
+    client = TestBed.inject(HttpClient);
+    service = new CartsService(client);
   });
 
   afterEach(() => {
@@ -72,24 +76,39 @@ describe('CartsService', () => {
   });
 
   it('restores valid persisted owned-product cart data', () => {
-    localStorage.setItem('cart', JSON.stringify([{ item: product, quantity: 3 }]));
-
-    const restoredService = new CartsService(
-      TestBed.inject((service as any).http?.constructor ?? Object) as never,
+    localStorage.setItem(
+      'cart',
+      JSON.stringify([{ item: product, quantity: 3 }]),
     );
 
-    expect(restoredService.items).toEqual([{ item: product, quantity: 3 }]);
+    const restoredService = new CartsService(client);
+
+    expect(restoredService.items).toEqual([
+      { item: product, quantity: 3 },
+    ]);
+    expect(restoredService.count$.value).toBe(3);
   });
 
-  it('discards malformed persisted entries', () => {
+  it('discards malformed persisted entries without breaking valid entries', () => {
     localStorage.setItem('cart', JSON.stringify([
       { item: product, quantity: 2 },
       { item: { id: 2 }, quantity: 1 },
       { item: product, quantity: 'bad' },
     ]));
 
-    const fresh = TestBed.inject(CartsService);
-    expect(fresh.items[0]?.item.id).toBe(product.id);
+    const restoredService = new CartsService(client);
+
+    expect(restoredService.items).toEqual([
+      { item: product, quantity: 2 },
+    ]);
+  });
+
+  it('falls back to an empty cart for invalid JSON', () => {
+    localStorage.setItem('cart', '{not-json');
+
+    const restoredService = new CartsService(client);
+
+    expect(restoredService.items).toEqual([]);
   });
 
   it('submits only product ids and quantities to the orders endpoint', () => {
