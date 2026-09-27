@@ -13,6 +13,9 @@ const DEFAULT_SETTINGS = {
   locale: 'en-US',
   logoUrl: null,
   primaryColor: '#111827',
+  taxRate: 0,
+  shippingFee: 0,
+  freeShippingThreshold: null,
 } as const;
 
 @Injectable()
@@ -28,12 +31,14 @@ export class SettingsService {
     });
 
     if (existing) {
-      return existing;
+      return this.serialize(existing);
     }
 
-    return this.prisma.merchantSettings.create({
+    const created = await this.prisma.merchantSettings.create({
       data: DEFAULT_SETTINGS,
     });
+
+    return this.serialize(created);
   }
 
   async update(input: UpdateMerchantSettingsDto, actorId: string) {
@@ -78,7 +83,22 @@ export class SettingsService {
         },
       );
 
-      return settings;
+      return this.serialize(settings);
     });
+  }
+  private serialize<T extends {
+    taxRate: { toString(): string } | number;
+    shippingFee: { toString(): string } | number;
+    freeShippingThreshold: { toString(): string } | number | null;
+  }>(settings: T) {
+    return {
+      ...settings,
+      taxRate: Number(settings.taxRate),
+      shippingFee: Number(settings.shippingFee),
+      freeShippingThreshold:
+        settings.freeShippingThreshold === null
+          ? null
+          : Number(settings.freeShippingThreshold),
+    };
   }
 }
