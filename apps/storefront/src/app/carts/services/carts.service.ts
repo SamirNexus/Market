@@ -5,6 +5,7 @@ import type {
   CreateStorefrontOrderInput,
   StorefrontOrder,
 } from '@market/contracts/order';
+import type { Payment } from '@market/contracts/payment';
 import { environment } from '../../../environments/environment';
 import { CartItem, Product } from '../../products/models/product';
 
@@ -84,6 +85,16 @@ export class CartsService {
     };
 
     return this.http.post<StorefrontOrder>(this.orderUrl, model);
+  }
+
+  createPayment(
+    orderId: string,
+    provider: 'manual' | 'stripe' = 'manual',
+  ): Observable<Payment> {
+    return this.http.post<Payment>(
+      `${this.orderUrl}/${orderId}/payments`,
+      { provider },
+    );
   }
 
   private save(cart: CartItem[]): void {
