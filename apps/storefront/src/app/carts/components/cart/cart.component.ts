@@ -15,6 +15,8 @@ export class CartComponent implements OnInit {
   confirmedOrderNo = '';
   confirmedTotal = 0;
   confirmedCurrency = 'USD';
+  paymentError = '';
+  paymentPending = false;
   estimatedTax = 0;
   estimatedShipping = 0;
   estimatedTotal = 0;
@@ -84,15 +86,15 @@ export class CartComponent implements OnInit {
 
     this.submitting = true;
     this.orderError = '';
+    this.paymentError = '';
     this.confirmedOrderNo = '';
 
     this.service.createOrder().subscribe({
       next: (order) => {
-        this.submitting = false;
         this.confirmedOrderNo = order.orderNo;
         this.confirmedTotal = order.total;
         this.confirmedCurrency = order.currency;
-        this.service.clear();
+        this.startPayment(order.id);
       },
       error: (error: { error?: { message?: string | string[] } }) => {
         this.submitting = false;
@@ -100,6 +102,28 @@ export class CartComponent implements OnInit {
         this.orderError = Array.isArray(message)
           ? message.join(' ')
           : message || 'Your order could not be placed. Please review availability and try again.';
+      },
+    });
+  }
+
+  private startPayment(orderId: string): void {
+    this.paymentPending = true;
+
+    this.service.createPayment(orderId, 'manual').subscribe({
+      next: (payment) => {
+        this.submitting = false;
+        this.paymentPending = false;
+        this.service.clear();
+
+        if (payment.checkoutUrl) {
+          window.location.assign(payment.checkoutUrl);
+        }
+      },
+      error: () => {
+        this.submitting = false;
+        this.paymentPending = false;
+        this.paymentError =
+          'Your order was created, but payment could not be started. Keep the order reference and try again.';
       },
     });
   }
