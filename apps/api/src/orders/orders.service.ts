@@ -303,6 +303,10 @@ export class OrdersService {
     return `MKT-${date}-${randomUUID().slice(0, 8).toUpperCase()}`;
   }
 
+  private roundMoney(value: number): number {
+    return Math.round((value + Number.EPSILON) * 100) / 100;
+  }
+
   private dateBoundary(value: string, endOfDay: boolean): Date {
     const date = new Date(value);
 
