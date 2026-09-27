@@ -7,8 +7,8 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { OrderStatus } from '@prisma/client';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { ListOrdersQueryDto } from './dto/list-orders-query.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrdersService } from './orders.service';
 
@@ -17,8 +17,8 @@ export class OrdersController {
   constructor(private readonly orders: OrdersService) {}
 
   @Get()
-  findAll(@Query('status') status?: OrderStatus) {
-    return this.orders.findAll(status);
+  findAll(@Query() query: ListOrdersQueryDto) {
+    return this.orders.findAll(query.status);
   }
 
   @Get(':id')
