@@ -22,7 +22,7 @@ export class OrdersController {
   @Roles(UserRole.STAFF, UserRole.ADMIN, UserRole.OWNER)
   @Get()
   findAll(@Query() query: ListOrdersQueryDto) {
-    return this.orders.findAll(query.status);
+    return this.orders.findAll(query);
   }
 
   @Roles(UserRole.STAFF, UserRole.ADMIN, UserRole.OWNER)
