@@ -24,7 +24,8 @@ export interface Product extends ProductBase {
   rating?: ProductRating;
 }
 
-export interface StorefrontProduct extends Omit<ProductBase, 'image'> {
+export interface StorefrontProduct extends Omit<ProductBase, 'id' | 'image'> {
+  id: number;
   image: string;
   rating: ProductRating;
 }
