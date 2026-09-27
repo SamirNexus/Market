@@ -89,14 +89,33 @@ export class AuthService {
     const nextHash = this.hashRefreshSecret(nextSecret);
     const expiresAt = this.createRefreshExpiry();
 
-    await this.prisma.session.update({
-      where: { id: session.id },
+    const rotated = await this.prisma.session.updateMany({
+      where: {
+        id: session.id,
+        refreshTokenHash: presentedHash,
+        revokedAt: null,
+        expiresAt: { gt: new Date() },
+      },
       data: {
         refreshTokenHash: nextHash,
         expiresAt,
         lastUsedAt: new Date(),
       },
     });
+
+    if (rotated.count !== 1) {
+      await this.prisma.session.updateMany({
+        where: {
+          id: session.id,
+          revokedAt: null,
+        },
+        data: {
+          revokedAt: new Date(),
+        },
+      });
+
+      throw new UnauthorizedException('Refresh token reuse detected');
+    }
 
     return this.buildAuthResponse(
       {
