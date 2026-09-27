@@ -202,8 +202,7 @@ describe('OrdersService', () => {
 
   it('waives shipping at the configured threshold', async () => {
     tx.product.findMany.mockResolvedValue([product]);
-    tx.merchantSettings.findUnique.mockReset();
-    tx.merchantSettings.findUnique.mockResolvedValue({
+    tx.merchantSettings.findUnique.mockReturnValueOnce(Promise.resolve({
       currency: 'USD',
       taxRate: new Prisma.Decimal(0),
       shippingFee: new Prisma.Decimal(12),
