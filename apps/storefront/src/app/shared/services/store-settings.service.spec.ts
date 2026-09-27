@@ -37,12 +37,17 @@ describe('StoreSettingsService', () => {
       locale: 'en-US',
       logoUrl: null,
       primaryColor: '#123456',
+      taxRate: 0.14,
+      shippingFee: 8,
+      freeShippingThreshold: 100,
       createdAt: '2026-09-27T00:00:00.000Z',
       updatedAt: '2026-09-27T00:00:00.000Z',
     });
 
     expect(service.current.storeName).toBe('Samir Market');
     expect(service.current.currency).toBe('EUR');
+    expect(service.current.taxRate).toBe(0.14);
+    expect(service.current.shippingFee).toBe(8);
   });
 
   it('keeps safe defaults when the settings request fails', () => {
@@ -55,5 +60,7 @@ describe('StoreSettingsService', () => {
 
     expect(service.current.storeName).toBe('Market');
     expect(service.current.currency).toBe('USD');
+    expect(service.current.taxRate).toBe(0);
+    expect(service.current.shippingFee).toBe(0);
   });
 });
