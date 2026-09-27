@@ -161,6 +161,25 @@ Application rollback and database rollback are separate concerns.
 - prefer backward-compatible schema changes before destructive cleanup
 - restore a database backup only as a deliberate recovery action
 
+## Payment cutover
+
+Keep `PAYMENT_PROVIDER=manual` until the external provider account is ready. For Stripe launch:
+
+1. create the production Stripe account configuration and obtain the secret key
+2. expose the API over HTTPS
+3. register `POST /api/v1/payments/webhooks/stripe` as the webhook destination
+4. store the resulting webhook signing secret in the deployment secret store
+5. set exact HTTPS success/cancel URLs
+6. change `PAYMENT_PROVIDER=stripe`
+7. deploy, create a low-value test order, complete Checkout, and verify the persisted payment becomes `SUCCEEDED` and the order becomes `CONFIRMED`
+8. replay the same webhook and verify the order/payment are not advanced twice
+
+Never commit live gateway keys or webhook secrets.
+
+## Launch smoke test
+
+After every production cutover verify, in order: API health, storefront health, admin health, owner login, public catalog, server-priced order creation, external checkout redirect (when enabled), verified payment confirmation, admin order visibility, one authorized order transition, and inventory consistency.
+
 ## Production cutover checklist
 
 Before replacing the historical public demos:
@@ -179,7 +198,10 @@ Before replacing the historical public demos:
 - archived/draft products are not public
 - runtime frontend API URL points to the owned API
 - monitoring and error reporting are enabled
+- payment provider is intentionally selected (`manual` or `stripe`)
+- when Stripe is enabled, webhook signature verification and one successful checkout have been verified in the deployed environment
+- backup restore has been exercised against a non-production database
 
 ## Current boundary
 
-This deployment foundation does not claim payment processing, tax calculation, shipping-rate integrations, customer accounts, or production monitoring are complete. Those remain separate product phases.
+The codebase includes a Stripe Checkout integration boundary and verified webhook lifecycle, but repository code cannot create provider accounts, issue production secrets, provision DNS/TLS, or prove a backup restore on infrastructure that has not been supplied. Those are explicit launch-operator gates, not hidden application TODOs.
