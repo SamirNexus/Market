@@ -191,8 +191,8 @@ export class AuthService {
   }
 
   private safeCompare(first: string, second: string): boolean {
-    const left = Buffer.from(first);
-    const right = Buffer.from(second);
+    const left = Buffer.from(first, 'hex');
+    const right = Buffer.from(second, 'hex');
 
     return left.length === right.length && timingSafeEqual(left, right);
   }
