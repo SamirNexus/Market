@@ -32,14 +32,44 @@ export class OrdersService {
     private readonly inventory: InventoryService,
   ) {}
 
-  findAll(status?: OrderStatus) {
-    return this.prisma.order
-      .findMany({
-        where: status ? { status } : undefined,
+  async findAll(query: {
+    status?: OrderStatus;
+    from?: string;
+    to?: string;
+    page: number;
+    limit: number;
+  }) {
+    const where: Prisma.OrderWhereInput = {
+      ...(query.status ? { status: query.status } : {}),
+      ...(query.from || query.to
+        ? {
+            createdAt: {
+              ...(query.from ? { gte: new Date(query.from) } : {}),
+              ...(query.to ? { lte: new Date(query.to) } : {}),
+            },
+          }
+        : {}),
+    };
+
+    const skip = (query.page - 1) * query.limit;
+
+    const [orders, total] = await this.prisma.$transaction([
+      this.prisma.order.findMany({
+        where,
         include: ORDER_INCLUDE,
         orderBy: { createdAt: 'desc' },
-      })
-      .then((orders) => orders.map((order) => this.serialize(order)));
+        skip,
+        take: query.limit,
+      }),
+      this.prisma.order.count({ where }),
+    ]);
+
+    return {
+      items: orders.map((order) => this.serialize(order)),
+      total,
+      page: query.page,
+      limit: query.limit,
+    };
   }
 
   async findOne(id: string) {
