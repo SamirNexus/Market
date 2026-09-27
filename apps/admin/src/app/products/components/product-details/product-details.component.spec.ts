@@ -8,6 +8,19 @@ describe('ProductDetailsComponent', () => {
   let component: ProductDetailsComponent;
   let service: jasmine.SpyObj<ProductsService>;
   let params$: Subject<ParamMap>;
+  const settingsService = {
+    get: jasmine.createSpy('get').and.returnValue(of({
+      id: 'default',
+      storeName: 'Market',
+      supportEmail: null,
+      currency: 'EUR',
+      locale: 'en-US',
+      logoUrl: null,
+      primaryColor: '#111827',
+      createdAt: '',
+      updatedAt: '',
+    })),
+  };
 
   const product: Product = {
     id: 'product-1',
@@ -24,7 +37,11 @@ describe('ProductDetailsComponent', () => {
     service.getProductById.and.callFake((id: ProductId) => of({ ...product, id }));
 
     const route = { paramMap: params$.asObservable() } as ActivatedRoute;
-    component = new ProductDetailsComponent(route, service);
+    component = new ProductDetailsComponent(
+      route,
+      service,
+      settingsService as never,
+    );
     component.ngOnInit();
   });
 
@@ -34,6 +51,7 @@ describe('ProductDetailsComponent', () => {
     expect(service.getProductById).toHaveBeenCalledWith('product-1');
     expect(component.data?.id).toBe('product-1');
     expect(component.loading).toBeFalse();
+    expect(component.currency).toBe('EUR');
   });
 
   it('reloads when the route id changes', () => {
