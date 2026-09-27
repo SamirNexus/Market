@@ -30,6 +30,13 @@ enum UserRole {
   OWNER
 }
 
+enum InventoryMovementType {
+  SALE
+  RESTOCK
+  ADJUSTMENT
+  RETURN
+}
+
 model Product {
   id          String        @id @default(cuid())
   title       String
@@ -45,7 +52,8 @@ model Product {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
-  orderItems OrderItem[]
+  orderItems         OrderItem[]
+  inventoryMovements InventoryMovement[]
 
   @@index([category])
   @@index([status, isActive])
@@ -62,8 +70,8 @@ model User {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  orders       Order[]
-  auditEvents  AuditLog[] @relation("AuditActor")
+  orders      Order[]
+  auditEvents AuditLog[] @relation("AuditActor")
 }
 
 model Order {
@@ -80,7 +88,8 @@ model Order {
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
 
-  items      OrderItem[]
+  items              OrderItem[]
+  inventoryMovements InventoryMovement[]
 
   @@index([customerId])
   @@index([status, createdAt])
@@ -99,6 +108,24 @@ model OrderItem {
 
   @@index([orderId])
   @@index([productId])
+}
+
+model InventoryMovement {
+  id           String                @id @default(cuid())
+  productId    String
+  product      Product               @relation(fields: [productId], references: [id], onDelete: Restrict)
+  orderId      String?
+  order        Order?                @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  type         InventoryMovementType
+  quantity     Int
+  stockBefore  Int
+  stockAfter   Int
+  reason       String?
+  createdAt    DateTime              @default(now())
+
+  @@index([productId, createdAt])
+  @@index([orderId])
+  @@index([type, createdAt])
 }
 
 model AuditLog {
