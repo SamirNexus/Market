@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PaymentStatus, Prisma } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { ManualPaymentProvider } from './manual-payment.provider';
 import { PaymentProvider } from './payment-provider';
@@ -15,6 +16,7 @@ export class PaymentsService {
 
   constructor(
     private readonly prisma: PrismaService,
+    private readonly config: ConfigService,
     manualProvider: ManualPaymentProvider,
     stripeProvider: StripePaymentProvider,
   ) {
@@ -24,8 +26,10 @@ export class PaymentsService {
     ]);
   }
 
-  async createForOrder(orderId: string, providerName = 'manual') {
-    const provider = this.providers.get(providerName);
+  async createForOrder(orderId: string, providerName?: string) {
+    const selectedProvider = providerName
+      ?? this.config.get<string>('PAYMENT_PROVIDER', 'manual');
+    const provider = this.providers.get(selectedProvider);
 
     if (!provider) {
       throw new BadRequestException('Payment provider is not configured');
