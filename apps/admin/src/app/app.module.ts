@@ -5,7 +5,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AuthInterceptor } from './auth/auth.interceptor';
 import { LoginComponent } from './auth/login/login.component';
-import { CartsModule } from './carts/carts.module';
+import { OrdersModule } from './orders/orders.module';
 import { ProductsModule } from './products/products.module';
 import { SharedModule } from './shared/shared.module';
 
@@ -19,7 +19,7 @@ import { SharedModule } from './shared/shared.module';
     AppRoutingModule,
     ProductsModule,
     SharedModule,
-    CartsModule
+    OrdersModule
   ],
   providers: [
     {
