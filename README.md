@@ -156,6 +156,8 @@ See:
 - `docs/ARCHITECTURE.md`
 - `docs/PRODUCT_ROADMAP.md`
 - `docs/DEPLOYMENT.md`
+- `docs/OBSERVABILITY.md`
+- `docs/RELEASE_RUNBOOK.md`
 - `docs/LAUNCH_CHECKLIST.md`
 
 ## Author

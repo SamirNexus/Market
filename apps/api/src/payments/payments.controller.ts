@@ -7,6 +7,7 @@ import {
   Post,
   RawBodyRequest,
   Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { Request } from 'express';
@@ -45,7 +46,7 @@ export class PaymentsController {
     @Headers('stripe-signature') signature?: string,
   ) {
     if (!request.rawBody || !signature) {
-      return { received: false };
+      throw new UnauthorizedException('Missing Stripe signature');
     }
 
     const event = this.stripeWebhook.parseAndVerify(
