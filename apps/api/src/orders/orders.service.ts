@@ -24,6 +24,9 @@ const ORDER_INCLUDE = {
       lastName: true,
     },
   },
+  payments: {
+    orderBy: { createdAt: 'desc' },
+  },
 } satisfies Prisma.OrderInclude;
 
 @Injectable()
@@ -345,6 +348,7 @@ export class OrdersService {
     tax: Prisma.Decimal;
     total: Prisma.Decimal;
     items: Array<{ unitPrice: Prisma.Decimal }>;
+    payments: Array<{ amount: Prisma.Decimal }>;
   }>(order: T) {
     return {
       ...order,
@@ -355,6 +359,10 @@ export class OrdersService {
       items: order.items.map((item) => ({
         ...item,
         unitPrice: Number(item.unitPrice),
+      })),
+      payments: order.payments.map((payment) => ({
+        ...payment,
+        amount: Number(payment.amount),
       })),
     };
   }
