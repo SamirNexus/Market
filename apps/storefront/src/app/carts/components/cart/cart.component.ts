@@ -15,6 +15,9 @@ export class CartComponent implements OnInit {
   confirmedOrderNo = '';
   confirmedTotal = 0;
   confirmedCurrency = 'USD';
+  estimatedTax = 0;
+  estimatedShipping = 0;
+  estimatedTotal = 0;
   readonly currency$ = this.settings.currency$;
 
   constructor(
@@ -30,7 +33,12 @@ export class CartComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.service.cart$.subscribe((cart) => (this.cartProducts = cart));
+    this.service.cart$.subscribe((cart) => {
+      this.cartProducts = cart;
+      this.updateEstimate();
+    });
+
+    this.settings.settings$.subscribe(() => this.updateEstimate());
   }
 
   changeQuantity(index: number, quantity: number): void {
@@ -43,6 +51,32 @@ export class CartComponent implements OnInit {
 
   clearCart(): void {
     this.service.clear();
+  }
+
+  private updateEstimate(): void {
+    const settings = this.settings.currentSettings;
+    const subtotal = this.totalPrice;
+
+    if (!settings) {
+      this.estimatedTax = 0;
+      this.estimatedShipping = 0;
+      this.estimatedTotal = subtotal;
+      return;
+    }
+
+    this.estimatedTax = this.roundMoney(subtotal * settings.taxRate);
+    this.estimatedShipping =
+      settings.freeShippingThreshold !== null
+      && subtotal >= settings.freeShippingThreshold
+        ? 0
+        : settings.shippingFee;
+    this.estimatedTotal = this.roundMoney(
+      subtotal + this.estimatedShipping + this.estimatedTax,
+    );
+  }
+
+  private roundMoney(value: number): number {
+    return Math.round((value + Number.EPSILON) * 100) / 100;
   }
 
   placeOrder(): void {
