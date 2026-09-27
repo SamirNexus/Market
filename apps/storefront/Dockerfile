@@ -6,6 +6,7 @@ COPY apps/storefront/package.json apps/storefront/package-lock.json ./apps/store
 RUN npm ci --prefix apps/storefront --no-audit --no-fund
 
 COPY packages/contracts ./packages/contracts
+COPY scripts ./scripts
 COPY apps/storefront ./apps/storefront
 
 RUN npm --prefix apps/storefront run build
