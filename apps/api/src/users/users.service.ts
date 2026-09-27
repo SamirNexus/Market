@@ -47,7 +47,7 @@ export class UsersService {
   }
 
   async createStaff(input: CreateStaffUserDto, actor: AuthenticatedUser) {
-    if (![UserRole.STAFF, UserRole.ADMIN].includes(input.role)) {
+    if (input.role !== UserRole.STAFF && input.role !== UserRole.ADMIN) {
       throw new BadRequestException('Only STAFF or ADMIN accounts can be created');
     }
 
