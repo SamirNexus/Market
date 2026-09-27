@@ -86,6 +86,10 @@ describe('OrdersService', () => {
     restockForCancelledOrder: jest.fn(),
   };
 
+  const audit = {
+    recordWithClient: jest.fn(),
+  };
+
   let service: OrdersService;
 
   beforeEach(() => {
@@ -93,7 +97,11 @@ describe('OrdersService', () => {
     prisma.$transaction.mockImplementation(
       async (callback: (client: typeof tx) => unknown) => callback(tx),
     );
-    service = new OrdersService(prisma as never, inventory as never);
+    service = new OrdersService(
+      prisma as never,
+      inventory as never,
+      audit as never,
+    );
   });
 
   it('aggregates duplicate lines and calculates price on the server', async () => {
@@ -129,6 +137,17 @@ describe('OrdersService', () => {
       }),
     });
     expect(result.total).toBe(200);
+    expect(audit.recordWithClient).toHaveBeenCalledWith(
+      tx,
+      null,
+      'ORDER_CREATED',
+      'Order',
+      order.id,
+      expect.objectContaining({
+        orderNo: order.orderNo,
+        total: 200,
+      }),
+    );
   });
 
   it('restocks when a cancellable order is cancelled', async () => {
@@ -144,12 +163,23 @@ describe('OrdersService', () => {
       status: OrderStatus.CANCELLED,
     });
 
-    await service.updateStatus(order.id, OrderStatus.CANCELLED);
+    await service.updateStatus(order.id, OrderStatus.CANCELLED, 'staff-1');
 
     expect(inventory.restockForCancelledOrder).toHaveBeenCalledWith(
       tx,
       order.id,
       [{ productId: product.id, quantity: 2 }],
+    );
+    expect(audit.recordWithClient).toHaveBeenCalledWith(
+      tx,
+      'staff-1',
+      'ORDER_STATUS_CHANGED',
+      'Order',
+      order.id,
+      {
+        from: OrderStatus.CONFIRMED,
+        to: OrderStatus.CANCELLED,
+      },
     );
   });
 
@@ -161,7 +191,7 @@ describe('OrdersService', () => {
     });
 
     await expect(
-      service.updateStatus(order.id, OrderStatus.CANCELLED),
+      service.updateStatus(order.id, OrderStatus.CANCELLED, 'staff-1'),
     ).rejects.toBeInstanceOf(ConflictException);
   });
 });
