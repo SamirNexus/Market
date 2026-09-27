@@ -11,6 +11,9 @@ describe('SettingsComponent', () => {
     locale: 'en-US',
     logoUrl: null,
     primaryColor: '#111827',
+    taxRate: 0.14,
+    shippingFee: 8,
+    freeShippingThreshold: 100,
     createdAt: '2026-09-27T00:00:00.000Z',
     updatedAt: '2026-09-27T00:00:00.000Z',
   };
@@ -22,6 +25,9 @@ describe('SettingsComponent', () => {
         ...settings,
         storeName: 'Samir Market',
         currency: 'EUR',
+        taxRate: 0.1,
+        shippingFee: 5,
+        freeShippingThreshold: 80,
       })),
     };
     const auth = {
@@ -40,6 +46,9 @@ describe('SettingsComponent', () => {
     component.form.patchValue({
       storeName: ' Samir Market ',
       currency: 'eur',
+      taxRatePercent: 10,
+      shippingFee: 5,
+      freeShippingThreshold: 80,
     });
 
     component.save();
@@ -49,6 +58,9 @@ describe('SettingsComponent', () => {
       jasmine.objectContaining({
         storeName: 'Samir Market',
         currency: 'EUR',
+        taxRate: 0.1,
+        shippingFee: 5,
+        freeShippingThreshold: 80,
       }),
     );
     expect(component.feedbackMessage).toContain('updated');
