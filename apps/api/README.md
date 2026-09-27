@@ -19,6 +19,8 @@ Server-side commerce core for the Market Commerce product.
 - inventory + movement ledger
 - orders + order items
 - audit log
+- provider-neutral payments
+- Stripe Checkout adapter and verified webhook lifecycle
 
 ## Security model
 
@@ -32,7 +34,7 @@ Server-side commerce core for the Market Commerce product.
 - public product reads and guest order creation separated from staff-only operations
 - server-side price, stock, and order-transition validation
 
-The current API deliberately does not implement payment-card handling. A payment provider adapter belongs in a later product phase.
+Market does not collect or store raw card details. External card entry is delegated to the configured payment provider. Stripe support remains disabled until deployment credentials and the production webhook secret are configured.
 
 ## Run locally
 
