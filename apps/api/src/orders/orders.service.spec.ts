@@ -95,6 +95,7 @@ describe('OrdersService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     tx.order.updateMany.mockResolvedValue({ count: 1 });
+    tx.merchantSettings.findUnique.mockReset();
     tx.merchantSettings.findUnique.mockResolvedValue({
       currency: 'USD',
       taxRate: new Prisma.Decimal(0),
