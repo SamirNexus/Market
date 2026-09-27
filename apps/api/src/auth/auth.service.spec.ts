@@ -34,7 +34,6 @@ describe('AuthService', () => {
     session: {
       create: jest.fn(),
       findUnique: jest.fn(),
-      update: jest.fn(),
       updateMany: jest.fn(),
     },
   };
@@ -63,6 +62,7 @@ describe('AuthService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jwt.signAsync.mockResolvedValue('access-token');
+    prisma.session.updateMany.mockResolvedValue({ count: 1 });
     service = new AuthService(
       prisma as never,
       passwords as never,
@@ -115,7 +115,7 @@ describe('AuthService', () => {
     ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
-  it('rotates a valid refresh token', async () => {
+  it('rotates a valid refresh token atomically', async () => {
     const secret = 'refresh-secret-value';
     const hash = createHash('sha256').update(secret).digest('hex');
 
@@ -123,12 +123,16 @@ describe('AuthService', () => {
       ...session,
       refreshTokenHash: hash,
     });
-    prisma.session.update.mockResolvedValue(session);
 
     const result = await service.refresh(`${session.id}.${secret}`);
 
-    expect(prisma.session.update).toHaveBeenCalledWith({
-      where: { id: session.id },
+    expect(prisma.session.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: session.id,
+        refreshTokenHash: hash,
+        revokedAt: null,
+        expiresAt: { gt: expect.any(Date) },
+      },
       data: expect.objectContaining({
         refreshTokenHash: expect.any(String),
         expiresAt: expect.any(Date),
@@ -145,7 +149,6 @@ describe('AuthService', () => {
         .update('different-secret')
         .digest('hex'),
     });
-    prisma.session.updateMany.mockResolvedValue({ count: 1 });
 
     await expect(
       service.refresh(`${session.id}.stolen-old-token`),
@@ -160,5 +163,24 @@ describe('AuthService', () => {
         revokedAt: expect.any(Date),
       },
     });
+  });
+
+  it('revokes the session if concurrent refresh rotation loses the race', async () => {
+    const secret = 'refresh-secret-value';
+    const hash = createHash('sha256').update(secret).digest('hex');
+
+    prisma.session.findUnique.mockResolvedValue({
+      ...session,
+      refreshTokenHash: hash,
+    });
+    prisma.session.updateMany
+      .mockResolvedValueOnce({ count: 0 })
+      .mockResolvedValueOnce({ count: 1 });
+
+    await expect(
+      service.refresh(`${session.id}.${secret}`),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
+
+    expect(prisma.session.updateMany).toHaveBeenCalledTimes(2);
   });
 });
