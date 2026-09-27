@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { CartsService } from '../../../carts/services/carts.service';
 import { Product } from '../../models/product';
 import { ProductsService } from '../../services/products.service';
+import { StoreSettingsService } from '../../../shared/services/store-settings.service';
 
 @Component({
   selector: 'app-product-details',
@@ -15,11 +16,13 @@ export class ProductDetailsComponent implements OnInit {
   loading = true;
   errorMessage = '';
   cartMessage = '';
+  readonly currency$ = this.settings.currency$;
 
   constructor(
     private route: ActivatedRoute,
     private service: ProductsService,
     private cartsService: CartsService,
+    private settings: StoreSettingsService,
   ) {}
 
   ngOnInit(): void {
