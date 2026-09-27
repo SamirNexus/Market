@@ -8,6 +8,8 @@ import {
   Query,
 } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
+import { AuthenticatedUser } from '../auth/auth.types';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Public } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -42,7 +44,8 @@ export class OrdersController {
   updateStatus(
     @Param('id') id: string,
     @Body() input: UpdateOrderStatusDto,
+    @CurrentUser() actor: AuthenticatedUser,
   ) {
-    return this.orders.updateStatus(id, input.status);
+    return this.orders.updateStatus(id, input.status, actor.id);
   }
 }
