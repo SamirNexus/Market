@@ -70,9 +70,6 @@ describe('OrdersService', () => {
     orderItem: {
       create: jest.fn(),
     },
-    merchantSettings: {
-      findUnique: jest.fn(),
-    },
   };
 
   const prisma = {
