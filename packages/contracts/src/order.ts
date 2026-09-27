@@ -46,3 +46,12 @@ export interface PaginatedOrders {
   page: number;
   limit: number;
 }
+
+export type StorefrontOrder = AdminOrder;
+
+export interface CreateStorefrontOrderInput {
+  items: Array<{
+    productId: string;
+    quantity: number;
+  }>;
+}
