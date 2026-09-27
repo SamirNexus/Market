@@ -4,6 +4,7 @@ import {
 } from '@nestjs/common';
 import { PaymentStatus, Prisma } from '@prisma/client';
 import { ManualPaymentProvider } from './manual-payment.provider';
+import { StripePaymentProvider } from './stripe-payment.provider';
 import { PaymentsService } from './payments.service';
 
 describe('PaymentsService', () => {
@@ -46,9 +47,14 @@ describe('PaymentsService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    const config = {
+      get: jest.fn((_key: string, fallback?: string) => fallback),
+    };
     service = new PaymentsService(
       prisma as never,
+      config as never,
       new ManualPaymentProvider(),
+      new StripePaymentProvider(config as never),
     );
   });
 
