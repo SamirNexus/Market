@@ -8,7 +8,7 @@ Market is one commerce product delivered through three coordinated applications:
 
 Commercially this is **one product**. Technically the customer UI, staff UI, and backend stay independently deployable so security boundaries, scaling, testing, and releases remain manageable.
 
-> Market is being productized in stages. Catalog persistence, inventory, order workflows, staff authentication, RBAC, audit foundations, and core merchant settings are implemented. Payment processing, tax/shipping configuration, production cutover, customer identity, and end-to-end purchase coverage are still explicit work before the product is described as production-ready.
+> Market is being productized in stages. Catalog persistence, inventory, order workflows, staff authentication, RBAC, audit foundations, and core merchant settings are implemented. External payment processing, production cutover, customer identity, and end-to-end purchase coverage are still explicit work before the product is described as production-ready.
 
 ## Applications
 
@@ -91,7 +91,8 @@ The API is the source of truth for pricing, stock, order state, permissions, and
 - runtime-configurable frontend API endpoints
 - production Docker images for storefront, admin, API, and migrations
 - production Compose model with health checks and migration gating
-- persistent merchant settings for store name, support email, branding color/logo, currency, and locale
+- persistent merchant settings for store name, support email, branding color/logo, currency, locale, tax rate, shipping fee, and free-shipping threshold
+- provider-neutral payment persistence and manual adapter foundation (no external charge yet)
 
 ## Local development
 
@@ -147,7 +148,7 @@ CI additionally starts PostgreSQL, applies migrations, seeds the database, valid
 
 ## Product status
 
-The project is now beyond a front-end portfolio demo: it has an owned persistence and security foundation. It is still intentionally not marketed as fully production-ready until deployment, payments, shipping/tax configuration, customer identity, observability, backups, and end-to-end flows are completed.
+The project is now beyond a front-end portfolio demo: it has an owned persistence and security foundation. It is still intentionally not marketed as fully production-ready until production cutover, an external payment gateway/webhook lifecycle, customer identity, observability, backups, and end-to-end flows are completed.
 
 See:
 

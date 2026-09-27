@@ -37,6 +37,15 @@ enum InventoryMovementType {
   RETURN
 }
 
+enum PaymentStatus {
+  PENDING
+  REQUIRES_ACTION
+  SUCCEEDED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
 model Product {
   id          String        @id @default(cuid())
   title       String
@@ -105,8 +114,30 @@ model Order {
 
   items              OrderItem[]
   inventoryMovements InventoryMovement[]
+  payments           Payment[]
 
   @@index([customerId])
+  @@index([status, createdAt])
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  orderId           String
+  order             Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  provider          String
+  providerPaymentId String?
+  status            PaymentStatus @default(PENDING)
+  amount            Decimal       @db.Decimal(12, 2)
+  currency          String
+  checkoutUrl       String?
+  failureCode       String?
+  failureMessage    String?
+  metadata          Json?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([orderId, createdAt])
+  @@index([provider, providerPaymentId])
   @@index([status, createdAt])
 }
 
