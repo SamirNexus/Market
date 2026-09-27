@@ -1,20 +1,23 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { ProductsService } from './products.service';
 import { Product } from '../models/product';
+import { ProductsService } from './products.service';
 
 describe('ProductsService', () => {
   let service: ProductsService;
   let httpController: HttpTestingController;
 
   const product: Product = {
-    id: 1,
+    id: 'product-1',
     title: 'Test product',
+    slug: 'test-product',
+    sku: 'TEST-001',
+    stock: 5,
+    status: 'ACTIVE' as const,
     price: 99,
     category: 'electronics',
     description: 'Test description',
     image: 'https://example.com/product.jpg',
-    rating: { rate: 4.5, count: 10 },
   };
 
   beforeEach(() => {
@@ -29,7 +32,7 @@ describe('ProductsService', () => {
     httpController.verify();
   });
 
-  it('requests all products', () => {
+  it('requests all published products', () => {
     service.getAllProducts().subscribe((products) => {
       expect(products).toEqual([product]);
     });
@@ -39,7 +42,7 @@ describe('ProductsService', () => {
     request.flush([product]);
   });
 
-  it('requests all categories', () => {
+  it('requests published categories', () => {
     service.getAllCategories().subscribe((categories) => {
       expect(categories).toEqual(['electronics']);
     });
@@ -59,12 +62,12 @@ describe('ProductsService', () => {
     request.flush([product]);
   });
 
-  it('requests a product by id', () => {
-    service.getProductById(1).subscribe((result) => {
+  it('requests a product by string id', () => {
+    service.getProductById('product-1').subscribe((result) => {
       expect(result).toEqual(product);
     });
 
-    const request = httpController.expectOne('https://fakestoreapi.com/products/1');
+    const request = httpController.expectOne('https://fakestoreapi.com/products/product-1');
     expect(request.request.method).toBe('GET');
     request.flush(product);
   });
