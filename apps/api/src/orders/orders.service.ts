@@ -60,20 +60,6 @@ export class OrdersService {
 
     return this.prisma.$transaction(
       async (tx) => {
-        if (input.customerId) {
-          const customer = await tx.user.findFirst({
-            where: {
-              id: input.customerId,
-              isActive: true,
-            },
-            select: { id: true },
-          });
-
-          if (!customer) {
-            throw new BadRequestException('Customer not found or inactive');
-          }
-        }
-
         const products = await tx.product.findMany({
           where: {
             id: { in: items.map((item) => item.productId) },
@@ -98,7 +84,7 @@ export class OrdersService {
         const order = await tx.order.create({
           data: {
             orderNo: this.createOrderNumber(),
-            customerId: input.customerId ?? null,
+            customerId: null,
             subtotal,
             shipping: 0,
             tax: 0,
