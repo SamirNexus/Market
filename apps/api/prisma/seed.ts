@@ -105,6 +105,9 @@ async function seedMerchantSettings(): Promise<void> {
       currency: 'USD',
       locale: 'en-US',
       primaryColor: '#111827',
+      taxRate: 0,
+      shippingFee: 0,
+      freeShippingThreshold: null,
     },
   });
 }
