@@ -1,1 +1,8 @@
-export type { Product, ProductInput, ProductRating } from '@market/contracts/product';
+export type {
+  AdminProductInput,
+  Product,
+  ProductId,
+  ProductInput,
+  ProductRating,
+  ProductStatus,
+} from '@market/contracts/product';

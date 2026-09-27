@@ -1,6 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Product, ProductInput } from '../../models/product';
+import {
+  AdminProductInput,
+  Product,
+  ProductId,
+} from '../../models/product';
 import { ProductsService } from '../../services/products.service';
 
 @Component({
@@ -15,9 +19,8 @@ export class AllProductsComponent implements OnInit {
   errorMessage = '';
   categoryError = '';
   feedbackMessage = '';
-  base64 = '';
   form!: FormGroup;
-  editingProductId: number | null = null;
+  editingProductId: ProductId | null = null;
 
   constructor(
     private service: ProductsService,
@@ -27,9 +30,12 @@ export class AllProductsComponent implements OnInit {
   ngOnInit(): void {
     this.form = this.build.group({
       title: ['', Validators.required],
+      slug: ['', Validators.required],
+      sku: ['', Validators.required],
       price: [null, [Validators.required, Validators.min(0)]],
+      stock: [0, [Validators.required, Validators.min(0)]],
       description: ['', Validators.required],
-      image: ['', Validators.required],
+      image: [''],
       category: ['', Validators.required],
     });
 
@@ -73,25 +79,10 @@ export class AllProductsComponent implements OnInit {
     this.form.get('category')?.setValue(category);
   }
 
-  getImagePath(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.base64 = String(reader.result ?? '');
-      this.form.get('image')?.setValue(this.base64);
-    };
-    reader.readAsDataURL(file);
-  }
-
   beginCreate(): void {
     this.editingProductId = null;
     this.feedbackMessage = '';
-    this.base64 = '';
-    this.form.reset();
+    this.form.reset({ stock: 0, image: '' });
   }
 
   beginUpdate(item: Product): void {
@@ -99,18 +90,30 @@ export class AllProductsComponent implements OnInit {
     this.feedbackMessage = '';
     this.form.patchValue({
       title: item.title,
+      slug: item.slug ?? '',
+      sku: item.sku ?? '',
       price: item.price,
+      stock: item.stock ?? 0,
       description: item.description,
-      image: item.image,
+      image: item.image ?? '',
       category: item.category,
     });
-    this.base64 = item.image;
   }
 
   saveProduct(): void {
     if (this.form.invalid) return;
 
-    const payload = this.form.getRawValue() as ProductInput;
+    const raw = this.form.getRawValue();
+    const payload: AdminProductInput = {
+      title: raw.title,
+      slug: raw.slug,
+      sku: raw.sku,
+      price: Number(raw.price),
+      stock: Number(raw.stock),
+      description: raw.description,
+      category: raw.category,
+      ...(raw.image ? { image: raw.image } : {}),
+    };
 
     if (this.editingProductId !== null) {
       const id = this.editingProductId;
@@ -131,10 +134,9 @@ export class AllProductsComponent implements OnInit {
 
     this.service.createProduct(payload).subscribe({
       next: (created) => {
-        this.products = [{ ...created, ...payload }, ...this.products];
+        this.products = [created, ...this.products];
         this.feedbackMessage = 'Product created successfully.';
-        this.form.reset();
-        this.base64 = '';
+        this.form.reset({ stock: 0, image: '' });
       },
       error: () => {
         this.feedbackMessage = 'Product creation failed. Please try again.';
@@ -146,10 +148,10 @@ export class AllProductsComponent implements OnInit {
     this.service.deleteProduct(item.id).subscribe({
       next: () => {
         this.products = this.products.filter((product) => product.id !== item.id);
-        this.feedbackMessage = 'Product deleted successfully.';
+        this.feedbackMessage = 'Product archived successfully.';
       },
       error: () => {
-        this.feedbackMessage = 'Product deletion failed. Please try again.';
+        this.feedbackMessage = 'Product archival failed. Please try again.';
       },
     });
   }

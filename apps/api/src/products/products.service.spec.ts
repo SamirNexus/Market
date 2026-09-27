@@ -45,6 +45,18 @@ describe('ProductsService', () => {
     });
   });
 
+  it('returns distinct active categories', async () => {
+    prisma.product.findMany.mockResolvedValue([
+      { category: 'electronics' },
+      { category: 'jewelery' },
+    ]);
+
+    await expect(service.findCategories()).resolves.toEqual([
+      'electronics',
+      'jewelery',
+    ]);
+  });
+
   it('throws when a product does not exist', async () => {
     prisma.product.findUnique.mockResolvedValue(null);
 
@@ -82,7 +94,7 @@ describe('ProductsService', () => {
   });
 
   it('soft-archives a product rather than deleting it', async () => {
-    prisma.product.findUnique.mockResolvedValue(product);
+    prisma.product.findUnique.mockResolvedValue({ id: product.id });
     prisma.product.update.mockResolvedValue({
       ...product,
       isActive: false,

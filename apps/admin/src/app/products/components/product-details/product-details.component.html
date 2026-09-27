@@ -3,13 +3,17 @@
 
   <div class="row d-flex" *ngIf="!loading && data">
     <div class="col-md-5 col-sm-12">
-      <img class="w-100" [src]="data.image" [alt]="data.title">
+      <img class="w-100" [src]="data.image || ''" [alt]="data.title">
     </div>
     <div class="col-md-7 col-sm-12">
       <div class="info">
         <ul class="list-unstyled">
           <li><strong>Title:</strong> {{ data.title }}</li>
+          <li *ngIf="data.sku"><strong>SKU:</strong> {{ data.sku }}</li>
+          <li *ngIf="data.slug"><strong>Slug:</strong> {{ data.slug }}</li>
           <li><strong>Category:</strong> {{ data.category }}</li>
+          <li *ngIf="data.stock !== undefined"><strong>Stock:</strong> {{ data.stock }}</li>
+          <li *ngIf="data.status"><strong>Status:</strong> {{ data.status }}</li>
           <li><strong>Description:</strong> {{ data.description }}</li>
           <li *ngIf="data.rating"><strong>Rating:</strong> {{ data.rating.rate }}</li>
           <li *ngIf="data.rating"><strong>Rating count:</strong> {{ data.rating.count }}</li>
