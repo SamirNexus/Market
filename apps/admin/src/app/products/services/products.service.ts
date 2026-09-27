@@ -8,7 +8,7 @@ import { AdminProductInput, Product, ProductId } from '../models/product';
   providedIn: 'root'
 })
 export class ProductsService {
-  private readonly baseUrl = `${environment.apiBaseUrl}/products`;
+  private readonly baseUrl = `${environment.apiBaseUrl}/admin/products`;
 
   constructor(private http: HttpClient) {}
 
@@ -18,12 +18,6 @@ export class ProductsService {
 
   getAllCategories(): Observable<string[]> {
     return this.http.get<string[]>(`${this.baseUrl}/categories`);
-  }
-
-  getProductsInCategory(category: string): Observable<Product[]> {
-    return this.http.get<Product[]>(
-      `${this.baseUrl}/category/${encodeURIComponent(category)}`,
-    );
   }
 
   getProductById(id: ProductId): Observable<Product> {
