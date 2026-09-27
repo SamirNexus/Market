@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { ProductsService } from '../../services/products.service';
-import { Product } from '../../models/product';
 import { CartsService } from '../../../carts/services/carts.service';
+import { Product } from '../../models/product';
+import { ProductsService } from '../../services/products.service';
 
 @Component({
   selector: 'app-all-products',
@@ -30,15 +30,19 @@ export class AllProductsComponent implements OnInit {
 
   get visibleProducts(): Product[] {
     const query = this.searchTerm.trim().toLowerCase();
-    const filteredProducts = query ? this.products.filter((product) =>
-      `${product.title} ${product.category} ${product.description}`.toLowerCase().includes(query),
-    ) : [...this.products];
+    const filteredProducts = query
+      ? this.products.filter((product) =>
+          `${product.title} ${product.category} ${product.description}`
+            .toLowerCase()
+            .includes(query),
+        )
+      : [...this.products];
 
     return filteredProducts.sort((first, second) => {
       if (this.sortBy === 'price-low') return first.price - second.price;
       if (this.sortBy === 'price-high') return second.price - first.price;
-      if (this.sortBy === 'rating') return second.rating.rate - first.rating.rate;
-      return first.id - second.id;
+      if (this.sortBy === 'stock') return second.stock - first.stock;
+      return first.title.localeCompare(second.title);
     });
   }
 
@@ -66,6 +70,11 @@ export class AllProductsComponent implements OnInit {
   }
 
   addToCart(event: { item: Product; quantity: number }): void {
+    if (event.item.stock <= 0) {
+      this.cartMessage = `${event.item.title} is currently out of stock.`;
+      return;
+    }
+
     const result = this.cartsService.addItem(event.item, event.quantity);
     this.cartMessage = result === 'added'
       ? `${event.item.title} added to your cart.`
