@@ -20,7 +20,7 @@ export class PaymentsService {
     manualProvider: ManualPaymentProvider,
     stripeProvider: StripePaymentProvider,
   ) {
-    this.providers = new Map([
+    this.providers = new Map<string, PaymentProvider>([
       [manualProvider.name, manualProvider],
       [stripeProvider.name, stripeProvider],
     ]);
