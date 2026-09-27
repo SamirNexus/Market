@@ -28,7 +28,7 @@ async function bootstrap(): Promise<void> {
     credentials: true,
   });
 
-  app.use((request, response, next) => {
+  app.use((request: import('express').Request, response: import('express').Response, next: import('express').NextFunction) => {
     const requestId =
       request.header('x-request-id')?.slice(0, 128) || randomUUID();
 
