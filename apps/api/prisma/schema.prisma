@@ -71,7 +71,22 @@ model User {
   updatedAt    DateTime  @updatedAt
 
   orders      Order[]
+  sessions    Session[]
   auditEvents AuditLog[] @relation("AuditActor")
+}
+
+model Session {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokenHash String
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  lastUsedAt       DateTime?
+  createdAt        DateTime @default(now())
+
+  @@index([userId, revokedAt])
+  @@index([expiresAt])
 }
 
 model Order {
