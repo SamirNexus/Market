@@ -94,6 +94,7 @@ describe('OrdersService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    tx.merchantSettings.findUnique.mockReset();
     tx.order.updateMany.mockResolvedValue({ count: 1 });
     tx.merchantSettings.findUnique.mockResolvedValue({
       currency: 'USD',
