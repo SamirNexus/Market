@@ -1,7 +1,10 @@
 import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
+import { UserRole } from '@prisma/client';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { AdjustInventoryDto } from './dto/adjust-inventory.dto';
 import { InventoryService } from './inventory.service';
 
+@Roles(UserRole.STAFF, UserRole.ADMIN, UserRole.OWNER)
 @Controller('inventory')
 export class InventoryController {
   constructor(private readonly inventory: InventoryService) {}
