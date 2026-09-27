@@ -1,0 +1,167 @@
+import {
+  ConflictException,
+} from '@nestjs/common';
+import {
+  OrderStatus,
+  ProductStatus,
+  Prisma,
+} from '@prisma/client';
+import { OrdersService } from './orders.service';
+
+describe('OrdersService', () => {
+  const product = {
+    id: 'product-1',
+    title: 'Camera',
+    slug: 'camera',
+    description: 'Indoor camera',
+    price: new Prisma.Decimal(100),
+    category: 'electronics',
+    image: null,
+    sku: 'CAM-001',
+    stock: 10,
+    status: ProductStatus.ACTIVE,
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  const order = {
+    id: 'order-1',
+    orderNo: 'MKT-TEST',
+    customerId: null,
+    status: OrderStatus.PENDING,
+    subtotal: new Prisma.Decimal(200),
+    shipping: new Prisma.Decimal(0),
+    tax: new Prisma.Decimal(0),
+    total: new Prisma.Decimal(200),
+    currency: 'USD',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  const createdOrder = {
+    ...order,
+    items: [
+      {
+        id: 'item-1',
+        orderId: order.id,
+        productId: product.id,
+        title: product.title,
+        sku: product.sku,
+        unitPrice: new Prisma.Decimal(100),
+        quantity: 2,
+      },
+    ],
+    customer: null,
+  };
+
+  const tx = {
+    user: {
+      findFirst: jest.fn(),
+    },
+    product: {
+      findMany: jest.fn(),
+    },
+    order: {
+      create: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
+    },
+    orderItem: {
+      create: jest.fn(),
+    },
+  };
+
+  const prisma = {
+    order: {
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
+    },
+    $transaction: jest.fn(),
+  };
+
+  const inventory = {
+    decrementForOrder: jest.fn(),
+    restockForCancelledOrder: jest.fn(),
+  };
+
+  let service: OrdersService;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    prisma.$transaction.mockImplementation(
+      async (callback: (client: typeof tx) => unknown) => callback(tx),
+    );
+    service = new OrdersService(prisma as never, inventory as never);
+  });
+
+  it('aggregates duplicate lines and calculates price on the server', async () => {
+    tx.product.findMany.mockResolvedValue([product]);
+    tx.order.create.mockResolvedValue(order);
+    tx.orderItem.create.mockResolvedValue(createdOrder.items[0]);
+    tx.order.findUnique.mockResolvedValue(createdOrder);
+
+    const result = await service.create({
+      items: [
+        { productId: product.id, quantity: 1 },
+        { productId: product.id, quantity: 1 },
+      ],
+    });
+
+    expect(tx.order.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        subtotal: 200,
+        total: 200,
+        currency: 'USD',
+      }),
+    });
+    expect(inventory.decrementForOrder).toHaveBeenCalledWith(
+      tx,
+      product.id,
+      2,
+      order.id,
+    );
+    expect(tx.orderItem.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        quantity: 2,
+        unitPrice: product.price,
+      }),
+    });
+    expect(result.total).toBe(200);
+  });
+
+  it('restocks when a cancellable order is cancelled', async () => {
+    prisma.order.findUnique
+      .mockResolvedValueOnce({
+        ...order,
+        status: OrderStatus.CONFIRMED,
+        items: [{ productId: product.id, quantity: 2 }],
+      })
+      .mockResolvedValueOnce(createdOrder);
+    tx.order.update.mockResolvedValue({
+      ...order,
+      status: OrderStatus.CANCELLED,
+    });
+
+    await service.updateStatus(order.id, OrderStatus.CANCELLED);
+
+    expect(inventory.restockForCancelledOrder).toHaveBeenCalledWith(
+      tx,
+      order.id,
+      [{ productId: product.id, quantity: 2 }],
+    );
+  });
+
+  it('rejects invalid order status transitions', async () => {
+    prisma.order.findUnique.mockResolvedValue({
+      ...order,
+      status: OrderStatus.SHIPPED,
+      items: [],
+    });
+
+    await expect(
+      service.updateStatus(order.id, OrderStatus.CANCELLED),
+    ).rejects.toBeInstanceOf(ConflictException);
+  });
+});
