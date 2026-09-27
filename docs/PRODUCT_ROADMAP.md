@@ -50,13 +50,13 @@ The goal is one reusable, configurable commerce product for small and medium mer
 
 ## Phase 4 — Sellable merchant configuration
 
-- [ ] Store branding
-- [ ] Currency and locale configuration
+- [x] Store branding foundation (name, logo URL, primary color)
+- [x] Currency and locale configuration
 - [ ] Tax configuration
 - [ ] Shipping methods
 - [ ] Payment-provider adapter
 - [ ] Email/notification adapter
-- [ ] Merchant settings
+- [x] Merchant settings with ADMIN/OWNER authorization and audit logging
 - [ ] Media storage adapter
 - [ ] Demo tenant and seed data
 
@@ -73,7 +73,7 @@ The goal is one reusable, configurable commerce product for small and medium mer
 - [ ] Security review and rate limiting
 - [ ] Monitoring and structured error reporting
 - [ ] Backup and recovery plan
-- [ ] Deployment/runbook documentation
+- [x] Deployment/runbook documentation
 - [ ] License and commercial packaging
 - [ ] Buyer-facing onboarding, screenshots, and demo data
 
