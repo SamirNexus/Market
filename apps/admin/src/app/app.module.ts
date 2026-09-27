@@ -8,6 +8,7 @@ import { LoginComponent } from './auth/login/login.component';
 import { OrdersModule } from './orders/orders.module';
 import { ProductsModule } from './products/products.module';
 import { SharedModule } from './shared/shared.module';
+import { SettingsModule } from './settings/settings.module';
 
 @NgModule({
   declarations: [
@@ -19,7 +20,8 @@ import { SharedModule } from './shared/shared.module';
     AppRoutingModule,
     ProductsModule,
     SharedModule,
-    OrdersModule
+    OrdersModule,
+    SettingsModule
   ],
   providers: [
     {
