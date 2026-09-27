@@ -2,7 +2,7 @@ import { of, throwError } from 'rxjs';
 import { CartsService } from '../../../carts/services/carts.service';
 import { Product } from '../../models/product';
 import { ProductsService } from '../../services/products.service';
-import { AllProductsComponent } from './AllProductsComponent';
+import { AllProductsComponent } from './all-products.component';
 
 describe('AllProductsComponent', () => {
   let component: AllProductsComponent;
