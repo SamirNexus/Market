@@ -27,7 +27,11 @@ export class CartsService {
     return this.cartSubject.value;
   }
 
-  addItem(product: Product, quantity: number): 'added' | 'updated' {
+  addItem(product: Product, quantity: number): 'added' | 'updated' | 'unavailable' {
+    if (!Number.isFinite(product.stock) || product.stock <= 0) {
+      return 'unavailable';
+    }
+
     const safeQuantity = this.normalizeQuantity(quantity, product.stock);
     const cart = [...this.items];
     const existingIndex = cart.findIndex(({ item }) => item.id === product.id);
@@ -123,7 +127,7 @@ export class CartsService {
       && typeof product.slug === 'string'
       && typeof product.sku === 'string'
       && Number.isFinite(product.stock)
-      && product.stock! >= 0
+      && product.stock! > 0
       && product.status === 'ACTIVE'
       && Number.isFinite(candidate.quantity);
   }
