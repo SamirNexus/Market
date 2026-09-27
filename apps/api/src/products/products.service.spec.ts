@@ -19,20 +19,37 @@ describe('ProductsService', () => {
     updatedAt: new Date('2026-09-01T00:00:00.000Z'),
   };
 
-  const prisma = {
+  const tx = {
     product: {
-      findMany: jest.fn(),
       findUnique: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
     },
+    auditLog: {
+      create: jest.fn(),
+    },
+  };
+
+  const prisma = {
+    product: {
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+    },
+    $transaction: jest.fn(),
+  };
+
+  const audit = {
+    recordWithClient: jest.fn(),
   };
 
   let service: ProductsService;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new ProductsService(prisma as never);
+    prisma.$transaction.mockImplementation(
+      async (callback: (client: typeof tx) => unknown) => callback(tx),
+    );
+    service = new ProductsService(prisma as never, audit as never);
   });
 
   it('returns active products ordered newest first', async () => {
@@ -65,22 +82,11 @@ describe('ProductsService', () => {
     );
   });
 
-  it('creates a product with safe defaults', async () => {
-    prisma.product.create.mockResolvedValue(product);
+  it('creates a product and audit event in one transaction', async () => {
+    tx.product.create.mockResolvedValue(product);
 
-    await service.create({
-      title: 'Camera',
-      slug: 'camera',
-      sku: 'CAM-001',
-      price: 100,
-      stock: 5,
-      description: 'Indoor camera',
-      category: 'electronics',
-      image: 'https://example.com/camera.jpg',
-    });
-
-    expect(prisma.product.create).toHaveBeenCalledWith({
-      data: {
+    await service.create(
+      {
         title: 'Camera',
         slug: 'camera',
         sku: 'CAM-001',
@@ -90,25 +96,47 @@ describe('ProductsService', () => {
         category: 'electronics',
         image: 'https://example.com/camera.jpg',
       },
-    });
+      'staff-1',
+    );
+
+    expect(tx.product.create).toHaveBeenCalled();
+    expect(audit.recordWithClient).toHaveBeenCalledWith(
+      tx,
+      'staff-1',
+      'PRODUCT_CREATED',
+      'Product',
+      product.id,
+      expect.objectContaining({ sku: product.sku }),
+    );
   });
 
-  it('soft-archives a product rather than deleting it', async () => {
-    prisma.product.findUnique.mockResolvedValue({ id: product.id });
-    prisma.product.update.mockResolvedValue({
+  it('soft-archives a product and records the actor', async () => {
+    tx.product.findUnique.mockResolvedValue({
+      id: product.id,
+      sku: product.sku,
+    });
+    tx.product.update.mockResolvedValue({
       ...product,
       isActive: false,
       status: ProductStatus.ARCHIVED,
     });
 
-    await service.remove(product.id);
+    await service.remove(product.id, 'admin-1');
 
-    expect(prisma.product.update).toHaveBeenCalledWith({
+    expect(tx.product.update).toHaveBeenCalledWith({
       where: { id: product.id },
       data: {
         isActive: false,
         status: 'ARCHIVED',
       },
     });
+    expect(audit.recordWithClient).toHaveBeenCalledWith(
+      tx,
+      'admin-1',
+      'PRODUCT_ARCHIVED',
+      'Product',
+      product.id,
+      { sku: product.sku },
+    );
   });
 });

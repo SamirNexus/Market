@@ -1,11 +1,21 @@
-<nav>
+<nav *ngIf="user$ | async as user">
   <div class="container">
     <div class="content">
       <a class="logo" routerLink="/products">Market Admin</a>
+
       <ul>
         <li><a routerLink="/products" routerLinkActive="active">Products</a></li>
-        <li><a routerLink="/carts" routerLinkActive="active">Carts</a></li>
+        <li><a routerLink="/orders" routerLinkActive="active">Orders</a></li>
       </ul>
+
+      <div class="d-flex align-items-center">
+        <span class="mr-3 small">
+          {{ user.email }} · {{ user.role }}
+        </span>
+        <button type="button" class="btn btn-sm btn-outline-light" (click)="logout()">
+          Sign out
+        </button>
+      </div>
     </div>
   </div>
 </nav>

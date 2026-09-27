@@ -9,11 +9,15 @@ import {
   Prisma,
   ProductStatus,
 } from '@prisma/client';
+import { AuditService } from '../audit/audit.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class InventoryService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly audit: AuditService,
+  ) {}
 
   async getProductInventory(productId: string) {
     const product = await this.prisma.product.findUnique({
@@ -45,7 +49,12 @@ export class InventoryService {
     });
   }
 
-  async adjust(productId: string, quantity: number, reason?: string) {
+  async adjust(
+    productId: string,
+    quantity: number,
+    reason: string | undefined,
+    actorId: string,
+  ) {
     if (!Number.isInteger(quantity) || quantity === 0) {
       throw new BadRequestException('Inventory adjustment must be a non-zero integer');
     }
@@ -91,6 +100,20 @@ export class InventoryService {
             reason: reason?.trim() || null,
           },
         });
+
+        await this.audit.recordWithClient(
+          tx,
+          actorId,
+          'INVENTORY_ADJUSTED',
+          'Product',
+          productId,
+          {
+            quantity,
+            stockBefore: product.stock,
+            stockAfter: nextStock,
+            reason: reason?.trim() || null,
+          },
+        );
 
         return {
           productId,

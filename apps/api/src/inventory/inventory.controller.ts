@@ -1,7 +1,12 @@
 import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
+import { UserRole } from '@prisma/client';
+import { AuthenticatedUser } from '../auth/auth.types';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { AdjustInventoryDto } from './dto/adjust-inventory.dto';
 import { InventoryService } from './inventory.service';
 
+@Roles(UserRole.STAFF, UserRole.ADMIN, UserRole.OWNER)
 @Controller('inventory')
 export class InventoryController {
   constructor(private readonly inventory: InventoryService) {}
@@ -27,7 +32,13 @@ export class InventoryController {
   adjust(
     @Param('productId') productId: string,
     @Body() input: AdjustInventoryDto,
+    @CurrentUser() actor: AuthenticatedUser,
   ) {
-    return this.inventory.adjust(productId, input.quantity, input.reason);
+    return this.inventory.adjust(
+      productId,
+      input.quantity,
+      input.reason,
+      actor.id,
+    );
   }
 }

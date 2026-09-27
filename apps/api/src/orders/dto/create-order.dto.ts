@@ -3,7 +3,6 @@ import {
   ArrayMinSize,
   IsArray,
   IsInt,
-  IsOptional,
   IsString,
   Min,
   ValidateNested,
@@ -20,10 +19,6 @@ export class CreateOrderItemDto {
 }
 
 export class CreateOrderDto {
-  @IsOptional()
-  @IsString()
-  customerId?: string;
-
   @IsArray()
   @ArrayMinSize(1)
   @ValidateNested({ each: true })

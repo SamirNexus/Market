@@ -9,6 +9,7 @@ import {
   Prisma,
 } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
+import { AuditService } from '../audit/audit.service';
 import { InventoryService } from '../inventory/inventory.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -30,16 +31,51 @@ export class OrdersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly inventory: InventoryService,
+    private readonly audit: AuditService,
   ) {}
 
-  findAll(status?: OrderStatus) {
-    return this.prisma.order
-      .findMany({
-        where: status ? { status } : undefined,
+  async findAll(query: {
+    status?: OrderStatus;
+    from?: string;
+    to?: string;
+    page: number;
+    limit: number;
+  }) {
+    const where: Prisma.OrderWhereInput = {
+      ...(query.status ? { status: query.status } : {}),
+      ...(query.from || query.to
+        ? {
+            createdAt: {
+              ...(query.from
+                ? { gte: this.dateBoundary(query.from, false) }
+                : {}),
+              ...(query.to
+                ? { lte: this.dateBoundary(query.to, true) }
+                : {}),
+            },
+          }
+        : {}),
+    };
+
+    const skip = (query.page - 1) * query.limit;
+
+    const [orders, total] = await this.prisma.$transaction([
+      this.prisma.order.findMany({
+        where,
         include: ORDER_INCLUDE,
         orderBy: { createdAt: 'desc' },
-      })
-      .then((orders) => orders.map((order) => this.serialize(order)));
+        skip,
+        take: query.limit,
+      }),
+      this.prisma.order.count({ where }),
+    ]);
+
+    return {
+      items: orders.map((order) => this.serialize(order)),
+      total,
+      page: query.page,
+      limit: query.limit,
+    };
   }
 
   async findOne(id: string) {
@@ -60,20 +96,6 @@ export class OrdersService {
 
     return this.prisma.$transaction(
       async (tx) => {
-        if (input.customerId) {
-          const customer = await tx.user.findFirst({
-            where: {
-              id: input.customerId,
-              isActive: true,
-            },
-            select: { id: true },
-          });
-
-          if (!customer) {
-            throw new BadRequestException('Customer not found or inactive');
-          }
-        }
-
         const products = await tx.product.findMany({
           where: {
             id: { in: items.map((item) => item.productId) },
@@ -84,10 +106,13 @@ export class OrdersService {
           throw new BadRequestException('One or more products were not found');
         }
 
-        const productMap = new Map(products.map((product) => [product.id, product]));
+        const productMap = new Map(
+          products.map((product) => [product.id, product]),
+        );
 
         const subtotal = items.reduce((sum, item) => {
           const product = productMap.get(item.productId);
+
           if (!product) {
             throw new BadRequestException('Product not found');
           }
@@ -98,7 +123,7 @@ export class OrdersService {
         const order = await tx.order.create({
           data: {
             orderNo: this.createOrderNumber(),
-            customerId: input.customerId ?? null,
+            customerId: null,
             subtotal,
             shipping: 0,
             tax: 0,
@@ -109,6 +134,7 @@ export class OrdersService {
 
         for (const item of items) {
           const product = productMap.get(item.productId);
+
           if (!product) {
             throw new BadRequestException('Product not found');
           }
@@ -132,13 +158,28 @@ export class OrdersService {
           });
         }
 
+        await this.audit.recordWithClient(
+          tx,
+          null,
+          'ORDER_CREATED',
+          'Order',
+          order.id,
+          {
+            orderNo: order.orderNo,
+            total: subtotal,
+            currency: 'USD',
+          },
+        );
+
         const created = await tx.order.findUnique({
           where: { id: order.id },
           include: ORDER_INCLUDE,
         });
 
         if (!created) {
-          throw new ConflictException('Order could not be loaded after creation');
+          throw new ConflictException(
+            'Order could not be loaded after creation',
+          );
         }
 
         return this.serialize(created);
@@ -147,7 +188,11 @@ export class OrdersService {
     );
   }
 
-  async updateStatus(id: string, target: OrderStatus) {
+  async updateStatus(
+    id: string,
+    target: OrderStatus,
+    actorId: string,
+  ) {
     const order = await this.prisma.order.findUnique({
       where: { id },
       include: { items: true },
@@ -163,9 +208,25 @@ export class OrdersService {
 
     this.assertTransitionAllowed(order.status, target);
 
-    if (target === OrderStatus.CANCELLED) {
-      await this.prisma.$transaction(
-        async (tx) => {
+    await this.prisma.$transaction(
+      async (tx) => {
+        const transitioned = await tx.order.updateMany({
+          where: {
+            id,
+            status: order.status,
+          },
+          data: {
+            status: target,
+          },
+        });
+
+        if (transitioned.count !== 1) {
+          throw new ConflictException(
+            'Order status changed concurrently; reload and try again',
+          );
+        }
+
+        if (target === OrderStatus.CANCELLED) {
           await this.inventory.restockForCancelledOrder(
             tx,
             order.id,
@@ -174,22 +235,22 @@ export class OrdersService {
               quantity: item.quantity,
             })),
           );
+        }
 
-          await tx.order.update({
-            where: { id },
-            data: { status: OrderStatus.CANCELLED },
-          });
-        },
-        { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
-      );
-
-      return this.findOne(id);
-    }
-
-    await this.prisma.order.update({
-      where: { id },
-      data: { status: target },
-    });
+        await this.audit.recordWithClient(
+          tx,
+          actorId,
+          'ORDER_STATUS_CHANGED',
+          'Order',
+          id,
+          {
+            from: order.status,
+            to: target,
+          },
+        );
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+    );
 
     return this.findOne(id);
   }
@@ -234,6 +295,16 @@ export class OrdersService {
   private createOrderNumber(): string {
     const date = new Date().toISOString().slice(0, 10).replaceAll('-', '');
     return `MKT-${date}-${randomUUID().slice(0, 8).toUpperCase()}`;
+  }
+
+  private dateBoundary(value: string, endOfDay: boolean): Date {
+    const date = new Date(value);
+
+    if (endOfDay && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      date.setUTCHours(23, 59, 59, 999);
+    }
+
+    return date;
   }
 
   private serialize<T extends {

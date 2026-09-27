@@ -6,83 +6,93 @@ Market is **one commercial product** with three deployable applications:
 
 1. **Storefront** for customers.
 2. **Admin** for staff.
-3. **Commerce API** for shared business rules and persistence.
+3. **Commerce API** for identity, business rules, persistence, and integrations.
 
-Keeping those applications separate does not make them separate products. It creates cleaner trust boundaries and allows customer traffic, staff operations, and backend workloads to evolve independently.
+The separation is a deployment and trust-boundary decision, not a product split.
 
-## Current transition architecture
-
-```mermaid
-flowchart LR
-  Customer[Customer] --> Storefront[Angular Storefront]
-  Staff[Staff] --> Admin[Angular Admin]
-
-  Storefront --> DemoAPI[Fake Store API]
-  Admin --> DemoAPI
-
-  Storefront -. migration .-> API[NestJS Commerce API]
-  Admin -. migration .-> API
-
-  API --> DB[(PostgreSQL)]
-```
-
-The front ends still use Fake Store API while the owned API is being built. Migration happens domain by domain rather than through a risky all-at-once cutover.
-
-## Target production architecture
+## Trust boundaries
 
 ```mermaid
 flowchart LR
-  Customer --> Storefront
-  Staff --> Admin
+  Customer[Customer Browser] --> Storefront[Storefront]
+  Staff[Staff Browser] --> Admin[Admin]
 
   Storefront --> API[Commerce API]
   Admin --> API
 
-  API --> Auth[Identity & RBAC]
-  API --> Catalog[Catalog & Inventory]
+  API --> Auth[Auth + RBAC]
+  API --> Catalog[Catalog]
+  API --> Inventory[Inventory]
   API --> Orders[Orders]
-  API --> Customers[Customers]
-  API --> Payments[Payment Adapter]
-  API --> Audit[Audit Log]
-
-  Catalog --> DB[(PostgreSQL)]
-  Orders --> DB
-  Customers --> DB
-  Auth --> DB
-  Audit --> DB
+  API --> Audit[Audit]
+  API --> DB[(PostgreSQL)]
 ```
+
+- the storefront receives no staff-only code or credentials
+- the admin requires authenticated staff sessions
+- browser input is never trusted for price, stock, permission, or order-state decisions
+- refresh credentials are kept in HttpOnly cookies
+- access tokens are short-lived and checked against revocable server-side sessions
+- privileged mutations are role-gated server-side
+
+## Identity and authorization
+
+Roles currently form a small hierarchy:
+
+- **STAFF** — operational catalog, inventory, and order work
+- **ADMIN** — staff operations plus destructive/archive and staff-account administration
+- **OWNER** — highest current administrative authority, including admin-account creation/deactivation
+
+The API uses rotating refresh-session secrets stored only as hashes. Access-token validation also checks the backing session and active user state, so staff deactivation/revocation is enforceable server-side.
+
+## Catalog and inventory
+
+Products retain a current `stock` balance for efficient reads. Every manual adjustment, sale decrement, and cancellation restock also creates an immutable inventory movement record.
+
+Order placement uses a serializable database transaction and conditional stock decrement. This prevents the browser from setting price and reduces oversell risk under concurrent writes.
+
+## Order workflow
+
+Order totals are calculated from database product prices. Order items snapshot title, SKU, and unit price so historical orders remain understandable after catalog changes.
+
+Supported state transitions are explicit rather than arbitrary:
+
+```text
+PENDING -> CONFIRMED -> PROCESSING -> SHIPPED -> DELIVERED -> REFUNDED
+    \          \           \
+     +----------+-----------+----> CANCELLED (before shipment)
+```
+
+Cancellation restocks inventory in the same transactional boundary as the status change.
+
+## Auditability
+
+Sensitive mutations record actor, action, entity, entity ID, timestamp, and scoped metadata. Audit logging is designed to happen in the same database transaction as the business mutation where consistency matters.
 
 ## Backend stack
 
 - NestJS
 - PostgreSQL
 - Prisma
-- DTO validation with class-validator
-- environment-based configuration
-- versioned REST API
+- class-validator / class-transformer
+- short-lived JWT access tokens
+- hashed rotating refresh sessions
+- Angular 16 admin and storefront clients
 
-## Current API domains
+## Scale direction
 
-The first backend slice establishes:
+Current architecture is a modular monolith by design. That is the preferred stage for this product: one deployable API with clear domain modules and one database transaction boundary.
 
-- health
-- products
-- users schema
-- orders schema
-- order items
-- audit log
-
-Authentication, authorization, payments, shipping, and notifications are intentionally not faked. They are added as real server-side capabilities in later slices.
+If traffic or organizational scale later requires service extraction, catalog, inventory, orders, identity, and integrations already have explicit module boundaries. Extraction should happen from measured need, not prematurely.
 
 ## Engineering rules
 
-- Market is marketed and versioned as one product.
+- Market is versioned and sold as one product.
 - Storefront, admin, and API remain independently buildable and deployable.
-- Staff-only code never ships in the customer bundle.
-- Secrets and privileged operations never live in browser code.
-- Admin mutations require authenticated server-side authorization before production use.
-- Price, stock, and order-state validation happen server-side.
-- External providers sit behind adapters.
-- Shared contracts remain typed and intentionally small.
-- CI is a merge gate for builds, tests, and database migrations.
-- Product claims must match implemented behavior.
+- privileged logic stays server-side
+- database migrations are committed and CI-tested
+- stock never becomes negative through supported inventory paths
+- order pricing is server-calculated
+- order status changes follow explicit transitions
+- secrets never live in browser bundles or source control
+- production claims must match implemented behavior
