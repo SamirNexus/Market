@@ -28,7 +28,7 @@ export class SettingsComponent implements OnInit {
     supportEmail: ['', [Validators.email, Validators.maxLength(254)]],
     currency: ['USD', [
       Validators.required,
-      Validators.pattern(/^[A-Z]{3}$/),
+      Validators.pattern(/^[A-Za-z]{3}$/),
     ]],
     locale: ['en-US', [
       Validators.required,
