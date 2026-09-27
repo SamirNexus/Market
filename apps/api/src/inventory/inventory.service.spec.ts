@@ -35,6 +35,10 @@ describe('InventoryService', () => {
     $transaction: jest.fn(),
   };
 
+  const audit = {
+    recordWithClient: jest.fn(),
+  };
+
   let service: InventoryService;
 
   beforeEach(() => {
@@ -42,13 +46,13 @@ describe('InventoryService', () => {
     prisma.$transaction.mockImplementation(
       async (callback: (client: typeof tx) => unknown) => callback(tx),
     );
-    service = new InventoryService(prisma as never);
+    service = new InventoryService(prisma as never, audit as never);
   });
 
   it('rejects an adjustment for an unknown product', async () => {
     tx.product.findUnique.mockResolvedValue(null);
 
-    await expect(service.adjust('missing', 2, 'stock count')).rejects.toBeInstanceOf(
+    await expect(service.adjust('missing', 2, 'stock count', 'staff-1')).rejects.toBeInstanceOf(
       NotFoundException,
     );
   });
@@ -56,7 +60,7 @@ describe('InventoryService', () => {
   it('prevents negative stock through manual adjustment', async () => {
     tx.product.findUnique.mockResolvedValue(product);
 
-    await expect(service.adjust(product.id, -11)).rejects.toBeInstanceOf(
+    await expect(service.adjust(product.id, -11, undefined, 'staff-1')).rejects.toBeInstanceOf(
       ConflictException,
     );
   });
@@ -66,7 +70,7 @@ describe('InventoryService', () => {
     tx.product.update.mockResolvedValue({ ...product, stock: 15 });
 
     await expect(
-      service.adjust(product.id, 5, 'delivery received'),
+      service.adjust(product.id, 5, 'delivery received', 'staff-1'),
     ).resolves.toEqual({
       productId: product.id,
       stock: 15,
@@ -81,6 +85,18 @@ describe('InventoryService', () => {
         reason: 'delivery received',
       }),
     });
+    expect(audit.recordWithClient).toHaveBeenCalledWith(
+      tx,
+      'staff-1',
+      'INVENTORY_ADJUSTED',
+      'Product',
+      product.id,
+      expect.objectContaining({
+        quantity: 5,
+        stockBefore: 10,
+        stockAfter: 15,
+      }),
+    );
   });
 
   it('atomically refuses an order when stock cannot be decremented', async () => {
