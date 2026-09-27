@@ -24,6 +24,8 @@ export interface OrderItem {
   quantity: number;
 }
 
+import type { Payment } from './payment';
+
 export interface AdminOrder {
   id: string;
   orderNo: string;
@@ -38,6 +40,7 @@ export interface AdminOrder {
   createdAt: string;
   updatedAt: string;
   items: OrderItem[];
+  payments?: Payment[];
 }
 
 export interface PaginatedOrders {
