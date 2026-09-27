@@ -56,16 +56,13 @@ describe('OrdersService', () => {
   };
 
   const tx = {
-    user: {
-      findFirst: jest.fn(),
-    },
     product: {
       findMany: jest.fn(),
     },
     order: {
       create: jest.fn(),
       findUnique: jest.fn(),
-      update: jest.fn(),
+      updateMany: jest.fn(),
     },
     orderItem: {
       create: jest.fn(),
@@ -76,7 +73,7 @@ describe('OrdersService', () => {
     order: {
       findMany: jest.fn(),
       findUnique: jest.fn(),
-      update: jest.fn(),
+      count: jest.fn(),
     },
     $transaction: jest.fn(),
   };
@@ -94,8 +91,15 @@ describe('OrdersService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    tx.order.updateMany.mockResolvedValue({ count: 1 });
     prisma.$transaction.mockImplementation(
-      async (callback: (client: typeof tx) => unknown) => callback(tx),
+      async (input: unknown) => {
+        if (Array.isArray(input)) {
+          return Promise.all(input);
+        }
+
+        return (input as (client: typeof tx) => unknown)(tx);
+      },
     );
     service = new OrdersService(
       prisma as never,
@@ -150,21 +154,33 @@ describe('OrdersService', () => {
     );
   });
 
-  it('restocks when a cancellable order is cancelled', async () => {
+  it('restocks once when a cancellable order is cancelled', async () => {
     prisma.order.findUnique
       .mockResolvedValueOnce({
         ...order,
         status: OrderStatus.CONFIRMED,
         items: [{ productId: product.id, quantity: 2 }],
       })
-      .mockResolvedValueOnce(createdOrder);
-    tx.order.update.mockResolvedValue({
-      ...order,
-      status: OrderStatus.CANCELLED,
+      .mockResolvedValueOnce({
+        ...createdOrder,
+        status: OrderStatus.CANCELLED,
+      });
+
+    await service.updateStatus(
+      order.id,
+      OrderStatus.CANCELLED,
+      'staff-1',
+    );
+
+    expect(tx.order.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: order.id,
+        status: OrderStatus.CONFIRMED,
+      },
+      data: {
+        status: OrderStatus.CANCELLED,
+      },
     });
-
-    await service.updateStatus(order.id, OrderStatus.CANCELLED, 'staff-1');
-
     expect(inventory.restockForCancelledOrder).toHaveBeenCalledWith(
       tx,
       order.id,
@@ -183,6 +199,25 @@ describe('OrdersService', () => {
     );
   });
 
+  it('rejects a concurrent status transition before restocking', async () => {
+    prisma.order.findUnique.mockResolvedValue({
+      ...order,
+      status: OrderStatus.CONFIRMED,
+      items: [{ productId: product.id, quantity: 2 }],
+    });
+    tx.order.updateMany.mockResolvedValue({ count: 0 });
+
+    await expect(
+      service.updateStatus(
+        order.id,
+        OrderStatus.CANCELLED,
+        'staff-1',
+      ),
+    ).rejects.toBeInstanceOf(ConflictException);
+
+    expect(inventory.restockForCancelledOrder).not.toHaveBeenCalled();
+  });
+
   it('rejects invalid order status transitions', async () => {
     prisma.order.findUnique.mockResolvedValue({
       ...order,
@@ -191,7 +226,11 @@ describe('OrdersService', () => {
     });
 
     await expect(
-      service.updateStatus(order.id, OrderStatus.CANCELLED, 'staff-1'),
+      service.updateStatus(
+        order.id,
+        OrderStatus.CANCELLED,
+        'staff-1',
+      ),
     ).rejects.toBeInstanceOf(ConflictException);
   });
 });
