@@ -70,6 +70,9 @@ describe('OrdersService', () => {
     orderItem: {
       create: jest.fn(),
     },
+    merchantSettings: {
+      findUnique: jest.fn(),
+    },
   };
 
   const prisma = {
@@ -95,6 +98,12 @@ describe('OrdersService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     tx.order.updateMany.mockResolvedValue({ count: 1 });
+    tx.merchantSettings.findUnique.mockResolvedValue({
+      currency: 'USD',
+      taxRate: new Prisma.Decimal(0),
+      shippingFee: new Prisma.Decimal(0),
+      freeShippingThreshold: null,
+    });
     tx.merchantSettings.findUnique.mockResolvedValue({ currency: 'EUR' });
     prisma.$transaction.mockImplementation(
       async (input: unknown) => {
@@ -157,6 +166,69 @@ describe('OrdersService', () => {
         currency: 'EUR',
       }),
     );
+  });
+
+  it('calculates configured tax and shipping on the server', async () => {
+    tx.product.findMany.mockResolvedValue([product]);
+    tx.merchantSettings.findUnique.mockResolvedValue({
+      currency: 'USD',
+      taxRate: new Prisma.Decimal('0.10'),
+      shippingFee: new Prisma.Decimal('12.50'),
+      freeShippingThreshold: new Prisma.Decimal('500'),
+    });
+    tx.order.create.mockImplementation(async ({ data }: { data: object }) => ({
+      ...order,
+      ...data,
+    }));
+    tx.orderItem.create.mockResolvedValue(createdOrder.items[0]);
+    tx.order.findUnique.mockResolvedValue({
+      ...createdOrder,
+      shipping: new Prisma.Decimal('12.50'),
+      tax: new Prisma.Decimal('20'),
+      total: new Prisma.Decimal('232.50'),
+    });
+
+    const result = await service.create({
+      items: [{ productId: product.id, quantity: 2 }],
+    });
+
+    expect(tx.order.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        subtotal: 200,
+        shipping: 12.5,
+        tax: 20,
+        total: 232.5,
+        currency: 'USD',
+      }),
+    });
+    expect(result.total).toBe(232.5);
+  });
+
+  it('waives shipping at the configured threshold', async () => {
+    tx.product.findMany.mockResolvedValue([product]);
+    tx.merchantSettings.findUnique.mockResolvedValue({
+      currency: 'USD',
+      taxRate: new Prisma.Decimal(0),
+      shippingFee: new Prisma.Decimal(12),
+      freeShippingThreshold: new Prisma.Decimal(200),
+    });
+    tx.order.create.mockImplementation(async ({ data }: { data: object }) => ({
+      ...order,
+      ...data,
+    }));
+    tx.orderItem.create.mockResolvedValue(createdOrder.items[0]);
+    tx.order.findUnique.mockResolvedValue(createdOrder);
+
+    await service.create({
+      items: [{ productId: product.id, quantity: 2 }],
+    });
+
+    expect(tx.order.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        shipping: 0,
+        total: 200,
+      }),
+    });
   });
 
   it('restocks once when a cancellable order is cancelled', async () => {
