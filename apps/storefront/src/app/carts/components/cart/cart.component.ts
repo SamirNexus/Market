@@ -1,6 +1,6 @@
-import { CartsService } from './../../services/carts.service';
 import { Component, OnInit } from '@angular/core';
 import { CartItem } from '../../../products/models/product';
+import { CartsService } from '../../services/carts.service';
 
 @Component({
   selector: 'app-cart',
@@ -9,14 +9,19 @@ import { CartItem } from '../../../products/models/product';
 })
 export class CartComponent implements OnInit {
   cartProducts: CartItem[] = [];
-  success = false;
   submitting = false;
   orderError = '';
+  confirmedOrderNo = '';
+  confirmedTotal = 0;
+  confirmedCurrency = 'USD';
 
   constructor(private service: CartsService) {}
 
   get totalPrice(): number {
-    return this.cartProducts.reduce((total, entry) => total + entry.item.price * entry.quantity, 0);
+    return this.cartProducts.reduce(
+      (total, entry) => total + entry.item.price * entry.quantity,
+      0,
+    );
   }
 
   ngOnInit(): void {
@@ -36,22 +41,27 @@ export class CartComponent implements OnInit {
   }
 
   placeOrder(): void {
-    const products = this.cartProducts.map(({ item, quantity }) => ({ productId: item.id, quantity }));
-    const model = { userId: 5, date: new Date().toISOString(), products };
+    if (this.cartProducts.length === 0 || this.submitting) return;
+
     this.submitting = true;
-    this.success = false;
     this.orderError = '';
-    this.service.createOrder(model).subscribe({
-      next: () => {
+    this.confirmedOrderNo = '';
+
+    this.service.createOrder().subscribe({
+      next: (order) => {
         this.submitting = false;
-        this.success = true;
+        this.confirmedOrderNo = order.orderNo;
+        this.confirmedTotal = order.total;
+        this.confirmedCurrency = order.currency;
         this.service.clear();
       },
-      error: () => {
+      error: (error: { error?: { message?: string | string[] } }) => {
         this.submitting = false;
-        this.orderError = 'Your order could not be placed. Please try again.';
+        const message = error.error?.message;
+        this.orderError = Array.isArray(message)
+          ? message.join(' ')
+          : message || 'Your order could not be placed. Please review availability and try again.';
       },
     });
   }
 }
-
