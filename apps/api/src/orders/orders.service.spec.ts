@@ -56,6 +56,9 @@ describe('OrdersService', () => {
   };
 
   const tx = {
+    merchantSettings: {
+      findUnique: jest.fn(),
+    },
     product: {
       findMany: jest.fn(),
     },
@@ -92,6 +95,7 @@ describe('OrdersService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     tx.order.updateMany.mockResolvedValue({ count: 1 });
+    tx.merchantSettings.findUnique.mockResolvedValue({ currency: 'EUR' });
     prisma.$transaction.mockImplementation(
       async (input: unknown) => {
         if (Array.isArray(input)) {
@@ -125,7 +129,7 @@ describe('OrdersService', () => {
       data: expect.objectContaining({
         subtotal: 200,
         total: 200,
-        currency: 'USD',
+        currency: 'EUR',
       }),
     });
     expect(inventory.decrementForOrder).toHaveBeenCalledWith(
@@ -150,6 +154,7 @@ describe('OrdersService', () => {
       expect.objectContaining({
         orderNo: order.orderNo,
         total: 200,
+        currency: 'EUR',
       }),
     );
   });
