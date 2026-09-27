@@ -7,6 +7,7 @@ import { PaymentStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { ManualPaymentProvider } from './manual-payment.provider';
 import { PaymentProvider } from './payment-provider';
+import { StripePaymentProvider } from './stripe-payment.provider';
 
 @Injectable()
 export class PaymentsService {
@@ -15,8 +16,12 @@ export class PaymentsService {
   constructor(
     private readonly prisma: PrismaService,
     manualProvider: ManualPaymentProvider,
+    stripeProvider: StripePaymentProvider,
   ) {
-    this.providers = new Map([[manualProvider.name, manualProvider]]);
+    this.providers = new Map([
+      [manualProvider.name, manualProvider],
+      [stripeProvider.name, stripeProvider],
+    ]);
   }
 
   async createForOrder(orderId: string, providerName = 'manual') {
@@ -24,6 +29,15 @@ export class PaymentsService {
 
     if (!provider) {
       throw new BadRequestException('Payment provider is not configured');
+    }
+
+    if (
+      provider instanceof StripePaymentProvider
+      && !provider.configured
+    ) {
+      throw new BadRequestException(
+        'Stripe is not configured for this environment',
+      );
     }
 
     const order = await this.prisma.order.findUnique({
@@ -106,6 +120,109 @@ export class PaymentsService {
     });
 
     return payments.map((payment) => this.serialize(payment));
+  }
+
+  async applyStripeEvent(event: {
+    id: string;
+    type: string;
+    data?: {
+      object?: {
+        id?: string;
+        payment_status?: string;
+        status?: string;
+        metadata?: Record<string, string>;
+      };
+    };
+  }) {
+    const object = event.data?.object;
+    const providerPaymentId = object?.id;
+
+    if (!providerPaymentId) {
+      return { received: true, ignored: true };
+    }
+
+    const payment = await this.prisma.payment.findFirst({
+      where: {
+        provider: 'stripe',
+        providerPaymentId,
+      },
+    });
+
+    if (!payment) {
+      return { received: true, ignored: true };
+    }
+
+    const target = this.stripeStatus(event.type, object);
+
+    if (!target || payment.status === target) {
+      return { received: true, duplicate: payment.status === target };
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.payment.updateMany({
+        where: {
+          id: payment.id,
+          status: payment.status,
+        },
+        data: {
+          status: target,
+          failureCode:
+            target === PaymentStatus.FAILED ? event.type : null,
+          failureMessage:
+            target === PaymentStatus.FAILED
+              ? 'The payment provider reported an unsuccessful checkout.'
+              : null,
+          metadata: {
+            stripeEventId: event.id,
+            stripeEventType: event.type,
+          },
+        },
+      });
+
+      if (updated.count !== 1) {
+        return;
+      }
+
+      if (target === PaymentStatus.SUCCEEDED) {
+        await tx.order.updateMany({
+          where: {
+            id: payment.orderId,
+            status: 'PENDING',
+          },
+          data: {
+            status: 'CONFIRMED',
+          },
+        });
+      }
+    });
+
+    return { received: true };
+  }
+
+  private stripeStatus(
+    eventType: string,
+    object: { payment_status?: string; status?: string },
+  ): PaymentStatus | null {
+    if (
+      eventType === 'checkout.session.completed'
+      && object.payment_status === 'paid'
+    ) {
+      return PaymentStatus.SUCCEEDED;
+    }
+
+    if (eventType === 'checkout.session.expired') {
+      return PaymentStatus.CANCELLED;
+    }
+
+    if (eventType === 'checkout.session.async_payment_failed') {
+      return PaymentStatus.FAILED;
+    }
+
+    if (eventType === 'checkout.session.async_payment_succeeded') {
+      return PaymentStatus.SUCCEEDED;
+    }
+
+    return null;
   }
 
   private serialize<T extends { amount: Prisma.Decimal }>(payment: T) {
