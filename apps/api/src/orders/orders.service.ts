@@ -96,6 +96,12 @@ export class OrdersService {
 
     return this.prisma.$transaction(
       async (tx) => {
+        const merchantSettings = await tx.merchantSettings.findUnique({
+          where: { id: 'default' },
+          select: { currency: true },
+        });
+        const currency = merchantSettings?.currency ?? 'USD';
+
         const products = await tx.product.findMany({
           where: {
             id: { in: items.map((item) => item.productId) },
@@ -128,7 +134,7 @@ export class OrdersService {
             shipping: 0,
             tax: 0,
             total: subtotal,
-            currency: 'USD',
+            currency,
           },
         });
 
@@ -167,7 +173,7 @@ export class OrdersService {
           {
             orderNo: order.orderNo,
             total: subtotal,
-            currency: 'USD',
+            currency,
           },
         );
 
