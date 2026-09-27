@@ -87,13 +87,10 @@ export class CartsService {
     return this.http.post<StorefrontOrder>(this.orderUrl, model);
   }
 
-  createPayment(
-    orderId: string,
-    provider: 'manual' | 'stripe' = 'manual',
-  ): Observable<Payment> {
+  createPayment(orderId: string): Observable<Payment> {
     return this.http.post<Payment>(
       `${this.orderUrl}/${orderId}/payments`,
-      { provider },
+      {},
     );
   }
 
