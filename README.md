@@ -8,7 +8,7 @@ Market is one commerce product delivered through three coordinated applications:
 
 Commercially this is **one product**. Technically the customer UI, staff UI, and backend stay independently deployable so security boundaries, scaling, testing, and releases remain manageable.
 
-> Market is being productized in stages. Catalog persistence, inventory, order workflows, staff authentication, RBAC, audit foundations, and core merchant settings are implemented. External payment processing, production cutover, customer identity, and end-to-end purchase coverage are still explicit work before the product is described as production-ready.
+> Market is in launch-candidate hardening. The owned commerce backend, staff security model, merchant settings, provider-neutral payment persistence, Stripe Checkout adapter, verified webhook lifecycle, container deployment model, and CI quality gates are implemented. Live gateway credentials, production infrastructure cutover, monitoring, restore verification, and final end-to-end launch checks remain environment/operator work.
 
 ## Applications
 
@@ -92,7 +92,8 @@ The API is the source of truth for pricing, stock, order state, permissions, and
 - production Docker images for storefront, admin, API, and migrations
 - production Compose model with health checks and migration gating
 - persistent merchant settings for store name, support email, branding color/logo, currency, locale, tax rate, shipping fee, and free-shipping threshold
-- provider-neutral payment persistence and manual adapter foundation (no external charge yet)
+- provider-neutral payment persistence with manual fallback and Stripe Checkout adapter
+- verified Stripe webhook signature handling and idempotent payment/order synchronization
 
 ## Local development
 
@@ -148,13 +149,14 @@ CI additionally starts PostgreSQL, applies migrations, seeds the database, valid
 
 ## Product status
 
-The project is now beyond a front-end portfolio demo: it has an owned persistence and security foundation. It is still intentionally not marketed as fully production-ready until production cutover, an external payment gateway/webhook lifecycle, customer identity, observability, backups, and end-to-end flows are completed.
+The project is now beyond a front-end portfolio demo: it has an owned persistence and security foundation. It is a launch candidate, not a claim that production infrastructure is already live. The repository contains the application and deployment foundations; production URLs, managed secrets, gateway credentials, monitoring, restore testing, and final end-to-end smoke checks must be completed in the target environment.
 
 See:
 
 - `docs/ARCHITECTURE.md`
 - `docs/PRODUCT_ROADMAP.md`
 - `docs/DEPLOYMENT.md`
+- `docs/LAUNCH_CHECKLIST.md`
 
 ## Author
 

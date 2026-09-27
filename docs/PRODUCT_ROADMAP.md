@@ -56,7 +56,7 @@ The goal is one reusable, configurable commerce product for small and medium mer
 - [x] Shipping configuration foundation (standard fee + free-shipping threshold)
 - [x] Payment-provider adapter foundation (provider-neutral persistence + manual adapter)
 - [x] External payment gateway adapter + verified/idempotent webhook lifecycle foundation
-- [ ] Configure live gateway credentials and production webhook endpoint
+- [ ] Configure live gateway credentials and production webhook endpoint (deployment gate; no secrets in source)
 - [ ] Email/notification adapter
 - [x] Merchant settings with ADMIN/OWNER authorization and audit logging
 - [ ] Media storage adapter
@@ -68,15 +68,16 @@ The goal is one reusable, configurable commerce product for small and medium mer
 
 - [x] Containerized deployment foundation and runtime frontend configuration
 - [x] Deployment runbook, migration gating, and backup baseline
-- [ ] Production API/database deployment
-- [ ] Storefront/admin public deployment cutover
-- [ ] End-to-end checkout and admin-order tests
+- [ ] Production API/database deployment (requires selected hosting/database)
+- [ ] Storefront/admin public deployment cutover (requires final public domains)
+- [ ] Deployed end-to-end checkout and admin-order smoke test (requires live environment)
 - [ ] Accessibility review
 - [ ] Security review and rate limiting
-- [ ] Monitoring and structured error reporting
-- [ ] Backup and recovery plan
+- [ ] Monitoring and structured error reporting (requires selected provider)
+- [x] Backup/recovery runbook and launch restore gate
+- [ ] Exercise restore against deployed non-production/restore database
 - [x] Deployment/runbook documentation
 - [ ] License and commercial packaging
-- [ ] Buyer-facing onboarding, screenshots, and demo data
+- [ ] Buyer-facing onboarding, screenshots, and demo data after final public deployment
 
 **Exit criterion:** Market can be demonstrated, deployed, maintained, and sold without representing unfinished capabilities as complete.
