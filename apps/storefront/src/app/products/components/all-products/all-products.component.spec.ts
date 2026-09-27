@@ -1,8 +1,8 @@
 import { of, throwError } from 'rxjs';
-import { AllProductsComponent } from './AllProductsComponent';
-import { ProductsService } from '../../services/products.service';
 import { CartsService } from '../../../carts/services/carts.service';
 import { Product } from '../../models/product';
+import { ProductsService } from '../../services/products.service';
+import { AllProductsComponent } from './AllProductsComponent';
 
 describe('AllProductsComponent', () => {
   let component: AllProductsComponent;
@@ -11,22 +11,28 @@ describe('AllProductsComponent', () => {
 
   const products: Product[] = [
     {
-      id: 1,
+      id: 'product-a',
       title: 'Alpha Phone',
+      slug: 'alpha-phone',
+      sku: 'ALPHA-001',
+      stock: 4,
+      status: 'ACTIVE',
       price: 200,
       category: 'electronics',
       description: 'Smart device',
       image: 'alpha.jpg',
-      rating: { rate: 3.5, count: 10 },
     },
     {
-      id: 2,
+      id: 'product-b',
       title: 'Beta Shirt',
+      slug: 'beta-shirt',
+      sku: 'BETA-001',
+      stock: 12,
+      status: 'ACTIVE',
       price: 50,
       category: 'clothing',
       description: 'Cotton shirt',
       image: 'beta.jpg',
-      rating: { rate: 4.8, count: 20 },
     },
   ];
 
@@ -41,6 +47,7 @@ describe('AllProductsComponent', () => {
     productsService.getAllProducts.and.returnValue(of(products));
     productsService.getAllCategories.and.returnValue(of(['electronics', 'clothing']));
     productsService.getProductsInCategory.and.returnValue(of([products[0]]));
+    cartsService.addItem.and.returnValue('added');
 
     component = new AllProductsComponent(productsService, cartsService);
   });
@@ -52,14 +59,20 @@ describe('AllProductsComponent', () => {
     expect(component.visibleProducts).toEqual([products[1]]);
   });
 
-  it('sorts products by price and rating', () => {
+  it('sorts products by price and stock', () => {
     component.products = products;
 
     component.sortBy = 'price-low';
-    expect(component.visibleProducts.map((product) => product.id)).toEqual([2, 1]);
+    expect(component.visibleProducts.map((product) => product.id)).toEqual([
+      'product-b',
+      'product-a',
+    ]);
 
-    component.sortBy = 'rating';
-    expect(component.visibleProducts.map((product) => product.id)).toEqual([2, 1]);
+    component.sortBy = 'stock';
+    expect(component.visibleProducts.map((product) => product.id)).toEqual([
+      'product-b',
+      'product-a',
+    ]);
   });
 
   it('loads all products for the All category and API-filtered products otherwise', () => {
@@ -68,6 +81,16 @@ describe('AllProductsComponent', () => {
 
     component.filterCategory('electronics');
     expect(productsService.getProductsInCategory).toHaveBeenCalledWith('electronics');
+  });
+
+  it('does not add an out-of-stock product', () => {
+    component.addToCart({
+      item: { ...products[0], stock: 0 },
+      quantity: 1,
+    });
+
+    expect(cartsService.addItem).not.toHaveBeenCalled();
+    expect(component.cartMessage).toContain('out of stock');
   });
 
   it('surfaces category loading failure without breaking the catalog', () => {
