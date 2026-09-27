@@ -1,12 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Product } from '@prisma/client';
+import { AuditService } from '../audit/audit.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly audit: AuditService,
+  ) {}
 
   async findAll() {
     const products = await this.prisma.product.findMany({
@@ -38,57 +42,109 @@ export class ProductsService {
     return this.toResponse(product);
   }
 
-  async create(input: CreateProductDto) {
-    const product = await this.prisma.product.create({
-      data: {
-        title: input.title,
-        slug: input.slug,
-        sku: input.sku,
-        price: input.price,
-        stock: input.stock ?? 0,
-        description: input.description,
-        category: input.category,
-        image: input.image ?? null,
-      },
+  async create(input: CreateProductDto, actorId: string) {
+    const product = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.product.create({
+        data: {
+          title: input.title,
+          slug: input.slug,
+          sku: input.sku,
+          price: input.price,
+          stock: input.stock ?? 0,
+          description: input.description,
+          category: input.category,
+          image: input.image ?? null,
+        },
+      });
+
+      await this.audit.recordWithClient(
+        tx,
+        actorId,
+        'PRODUCT_CREATED',
+        'Product',
+        created.id,
+        {
+          sku: created.sku,
+          title: created.title,
+        },
+      );
+
+      return created;
     });
 
     return this.toResponse(product);
   }
 
-  async update(id: string, input: UpdateProductDto) {
-    await this.assertExists(id);
+  async update(id: string, input: UpdateProductDto, actorId: string) {
+    const product = await this.prisma.$transaction(async (tx) => {
+      const existing = await tx.product.findUnique({
+        where: { id },
+        select: { id: true },
+      });
 
-    const product = await this.prisma.product.update({
-      where: { id },
-      data: input,
+      if (!existing) {
+        throw new NotFoundException('Product not found');
+      }
+
+      const updated = await tx.product.update({
+        where: { id },
+        data: input,
+      });
+
+      await this.audit.recordWithClient(
+        tx,
+        actorId,
+        'PRODUCT_UPDATED',
+        'Product',
+        id,
+        {
+          fields: Object.keys(input),
+        },
+      );
+
+      return updated;
     });
 
     return this.toResponse(product);
   }
 
-  async remove(id: string) {
-    await this.assertExists(id);
+  async remove(id: string, actorId: string) {
+    const product = await this.prisma.$transaction(async (tx) => {
+      const existing = await tx.product.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          sku: true,
+        },
+      });
 
-    const product = await this.prisma.product.update({
-      where: { id },
-      data: {
-        isActive: false,
-        status: 'ARCHIVED',
-      },
+      if (!existing) {
+        throw new NotFoundException('Product not found');
+      }
+
+      const archived = await tx.product.update({
+        where: { id },
+        data: {
+          isActive: false,
+          status: 'ARCHIVED',
+        },
+      });
+
+      await this.audit.recordWithClient(
+        tx,
+        actorId,
+        'PRODUCT_ARCHIVED',
+        'Product',
+        id,
+        {
+          sku: existing.sku,
+        },
+      );
+
+      return archived;
     });
 
     return this.toResponse(product);
-  }
-
-  private async assertExists(id: string): Promise<void> {
-    const product = await this.prisma.product.findUnique({
-      where: { id },
-      select: { id: true },
-    });
-
-    if (!product) {
-      throw new NotFoundException('Product not found');
-    }
   }
 
   private toResponse(product: Product) {
