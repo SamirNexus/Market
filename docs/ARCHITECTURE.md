@@ -119,3 +119,10 @@ Merchant identity and regional defaults are stored in a single durable `Merchant
 Current configurable fields are store name, support email, logo URL, primary color, currency, and locale. New orders snapshot the configured currency at creation time, so historical orders keep their original currency even if the merchant later changes settings.
 
 Changing the currency code does **not** convert existing numeric catalog prices. Automatic FX conversion is intentionally out of scope; a merchant changing currency must review or reprice the catalog. Theme colors are configurable, but automated contrast/accessibility validation remains part of the accessibility review phase.
+
+
+## Payment boundary
+
+Payments use a provider-neutral domain boundary rather than coupling orders to a gateway SDK. A durable Payment record snapshots the server-calculated order amount and currency, tracks provider identifiers and lifecycle status, and can expose a provider checkout URL when an adapter requires customer action.
+
+The initial `manual` adapter deliberately performs no external charge. It proves the adapter and persistence boundary without claiming payment processing. A production gateway adapter must verify provider webhooks server-side before marking a payment successful; browser redirects are not authoritative payment confirmation.
