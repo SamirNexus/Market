@@ -39,6 +39,18 @@ export class SettingsComponent implements OnInit {
       Validators.required,
       Validators.pattern(/^#[0-9A-Fa-f]{6}$/),
     ]],
+    taxRatePercent: [0, [
+      Validators.required,
+      Validators.min(0),
+      Validators.max(100),
+    ]],
+    shippingFee: [0, [
+      Validators.required,
+      Validators.min(0),
+    ]],
+    freeShippingThreshold: [null as number | null, [
+      Validators.min(0),
+    ]],
   });
 
   constructor(
@@ -74,6 +86,9 @@ export class SettingsComponent implements OnInit {
           locale: settings.locale,
           logoUrl: settings.logoUrl ?? '',
           primaryColor: settings.primaryColor,
+          taxRatePercent: settings.taxRate * 100,
+          shippingFee: settings.shippingFee,
+          freeShippingThreshold: settings.freeShippingThreshold,
         });
       },
       error: () => {
@@ -96,6 +111,9 @@ export class SettingsComponent implements OnInit {
       locale: raw.locale?.trim() || undefined,
       logoUrl: raw.logoUrl?.trim() || null,
       primaryColor: raw.primaryColor?.trim() || undefined,
+      taxRate: (raw.taxRatePercent ?? 0) / 100,
+      shippingFee: raw.shippingFee ?? 0,
+      freeShippingThreshold: raw.freeShippingThreshold ?? null,
     };
 
     this.saving = true;

@@ -6,6 +6,9 @@ export interface MerchantSettings {
   locale: string;
   logoUrl: string | null;
   primaryColor: string;
+  taxRate: number;
+  shippingFee: number;
+  freeShippingThreshold: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -17,4 +20,7 @@ export interface UpdateMerchantSettingsInput {
   locale?: string;
   logoUrl?: string | null;
   primaryColor?: string;
+  taxRate?: number;
+  shippingFee?: number;
+  freeShippingThreshold?: number | null;
 }

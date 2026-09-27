@@ -98,7 +98,12 @@ export class OrdersService {
       async (tx) => {
         const merchantSettings = await tx.merchantSettings.findUnique({
           where: { id: 'default' },
-          select: { currency: true },
+          select: {
+            currency: true,
+            taxRate: true,
+            shippingFee: true,
+            freeShippingThreshold: true,
+          },
         });
         const currency = merchantSettings?.currency ?? 'USD';
 
@@ -126,14 +131,31 @@ export class OrdersService {
           return sum + Number(product.price) * item.quantity;
         }, 0);
 
+        const taxRate = Number(merchantSettings?.taxRate ?? 0);
+        const configuredShipping = Number(
+          merchantSettings?.shippingFee ?? 0,
+        );
+        const freeShippingThreshold =
+          merchantSettings?.freeShippingThreshold === null
+          || merchantSettings?.freeShippingThreshold === undefined
+            ? null
+            : Number(merchantSettings.freeShippingThreshold);
+        const shipping =
+          freeShippingThreshold !== null
+          && subtotal >= freeShippingThreshold
+            ? 0
+            : configuredShipping;
+        const tax = this.roundMoney(subtotal * taxRate);
+        const total = this.roundMoney(subtotal + shipping + tax);
+
         const order = await tx.order.create({
           data: {
             orderNo: this.createOrderNumber(),
             customerId: null,
             subtotal,
-            shipping: 0,
-            tax: 0,
-            total: subtotal,
+            shipping,
+            tax,
+            total,
             currency,
           },
         });
@@ -172,7 +194,7 @@ export class OrdersService {
           order.id,
           {
             orderNo: order.orderNo,
-            total: subtotal,
+            total,
             currency,
           },
         );
@@ -301,6 +323,10 @@ export class OrdersService {
   private createOrderNumber(): string {
     const date = new Date().toISOString().slice(0, 10).replaceAll('-', '');
     return `MKT-${date}-${randomUUID().slice(0, 8).toUpperCase()}`;
+  }
+
+  private roundMoney(value: number): number {
+    return Math.round((value + Number.EPSILON) * 100) / 100;
   }
 
   private dateBoundary(value: string, endOfDay: boolean): Date {

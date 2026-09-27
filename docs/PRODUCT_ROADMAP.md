@@ -52,8 +52,8 @@ The goal is one reusable, configurable commerce product for small and medium mer
 
 - [x] Store branding foundation (name, logo URL, primary color)
 - [x] Currency and locale configuration
-- [ ] Tax configuration
-- [ ] Shipping methods
+- [x] Tax configuration (merchant rate, server-authoritative calculation)
+- [x] Shipping configuration foundation (standard fee + free-shipping threshold)
 - [ ] Payment-provider adapter
 - [ ] Email/notification adapter
 - [x] Merchant settings with ADMIN/OWNER authorization and audit logging

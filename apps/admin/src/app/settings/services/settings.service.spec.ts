@@ -17,6 +17,9 @@ describe('SettingsService', () => {
     locale: 'en-US',
     logoUrl: null,
     primaryColor: '#111827',
+    taxRate: 0,
+    shippingFee: 0,
+    freeShippingThreshold: null,
     createdAt: '2026-09-27T00:00:00.000Z',
     updatedAt: '2026-09-27T00:00:00.000Z',
   };

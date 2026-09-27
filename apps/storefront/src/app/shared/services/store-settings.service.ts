@@ -13,6 +13,9 @@ const FALLBACK_SETTINGS: MerchantSettings = {
   locale: 'en-US',
   logoUrl: null,
   primaryColor: '#111827',
+  taxRate: 0,
+  shippingFee: 0,
+  freeShippingThreshold: null,
   createdAt: '',
   updatedAt: '',
 };
@@ -38,6 +41,10 @@ export class StoreSettingsService {
   constructor(private http: HttpClient) {}
 
   get current(): MerchantSettings {
+    return this.subject.value;
+  }
+
+  get currentSettings(): MerchantSettings {
     return this.subject.value;
   }
 
