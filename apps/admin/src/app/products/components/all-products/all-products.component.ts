@@ -6,6 +6,7 @@ import {
   ProductId,
 } from '../../models/product';
 import { ProductsService } from '../../services/products.service';
+import { SettingsService } from '../../../settings/services/settings.service';
 
 @Component({
   selector: 'app-all-products',
@@ -21,10 +22,12 @@ export class AllProductsComponent implements OnInit {
   feedbackMessage = '';
   form!: FormGroup;
   editingProductId: ProductId | null = null;
+  currency = 'USD';
 
   constructor(
     private service: ProductsService,
     private build: FormBuilder,
+    private settingsService: SettingsService,
   ) {}
 
   ngOnInit(): void {
@@ -41,6 +44,7 @@ export class AllProductsComponent implements OnInit {
 
     this.getProducts();
     this.getCategories();
+    this.getCurrency();
   }
 
   get isEditing(): boolean {
@@ -71,6 +75,14 @@ export class AllProductsComponent implements OnInit {
       error: () => {
         this.categories = [];
         this.categoryError = 'Categories are temporarily unavailable.';
+      },
+    });
+  }
+
+  getCurrency(): void {
+    this.settingsService.get().subscribe({
+      next: (settings) => {
+        this.currency = settings.currency;
       },
     });
   }
