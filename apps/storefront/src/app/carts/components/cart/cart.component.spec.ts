@@ -21,6 +21,7 @@ describe('CartComponent', () => {
   let cartsService: jasmine.SpyObj<CartsService>;
   let cart$: BehaviorSubject<CartItem[]>;
   let component: CartComponent;
+  const settings = { currency$: of('EUR') };
 
   beforeEach(() => {
     cart$ = new BehaviorSubject<CartItem[]>(cart);
@@ -45,7 +46,7 @@ describe('CartComponent', () => {
       items: [],
     }));
 
-    component = new CartComponent(cartsService);
+    component = new CartComponent(cartsService, settings as never);
     component.ngOnInit();
   });
 
