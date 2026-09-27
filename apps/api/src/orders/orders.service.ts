@@ -9,6 +9,7 @@ import {
   Prisma,
 } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
+import { AuditService } from '../audit/audit.service';
 import { InventoryService } from '../inventory/inventory.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -30,6 +31,7 @@ export class OrdersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly inventory: InventoryService,
+    private readonly audit: AuditService,
   ) {}
 
   async findAll(query: {
@@ -148,6 +150,19 @@ export class OrdersService {
           });
         }
 
+        await this.audit.recordWithClient(
+          tx,
+          null,
+          'ORDER_CREATED',
+          'Order',
+          order.id,
+          {
+            orderNo: order.orderNo,
+            total: subtotal,
+            currency: 'USD',
+          },
+        );
+
         const created = await tx.order.findUnique({
           where: { id: order.id },
           include: ORDER_INCLUDE,
@@ -163,7 +178,7 @@ export class OrdersService {
     );
   }
 
-  async updateStatus(id: string, target: OrderStatus) {
+  async updateStatus(id: string, target: OrderStatus, actorId: string) {
     const order = await this.prisma.order.findUnique({
       where: { id },
       include: { items: true },
@@ -195,6 +210,18 @@ export class OrdersService {
             where: { id },
             data: { status: OrderStatus.CANCELLED },
           });
+
+          await this.audit.recordWithClient(
+            tx,
+            actorId,
+            'ORDER_STATUS_CHANGED',
+            'Order',
+            id,
+            {
+              from: order.status,
+              to: OrderStatus.CANCELLED,
+            },
+          );
         },
         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
       );
@@ -202,9 +229,23 @@ export class OrdersService {
       return this.findOne(id);
     }
 
-    await this.prisma.order.update({
-      where: { id },
-      data: { status: target },
+    await this.prisma.$transaction(async (tx) => {
+      await tx.order.update({
+        where: { id },
+        data: { status: target },
+      });
+
+      await this.audit.recordWithClient(
+        tx,
+        actorId,
+        'ORDER_STATUS_CHANGED',
+        'Order',
+        id,
+        {
+          from: order.status,
+          to: target,
+        },
+      );
     });
 
     return this.findOne(id);
