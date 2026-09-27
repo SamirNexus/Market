@@ -8,7 +8,7 @@
     <button class="btn btn-link text-danger" *ngIf="cartProducts.length" (click)="clearCart()">Clear cart</button>
   </div>
 
-  <div class="cart-page__empty" *ngIf="!cartProducts.length && !success">
+  <div class="cart-page__empty" *ngIf="!cartProducts.length && !confirmedOrderNo">
     <h2>Your cart is empty</h2>
     <p>Explore the catalog and add something you like.</p>
     <a class="btn btn-dark" routerLink="/products">Continue shopping</a>
@@ -21,12 +21,24 @@
         <div class="cart-item__details">
           <span>{{ entry.item.category }}</span>
           <h2>{{ entry.item.title }}</h2>
+          <small>{{ entry.item.stock }} currently available</small>
           <button class="btn btn-link text-danger p-0" (click)="removeProduct(index)">Remove</button>
         </div>
         <div class="cart-item__quantity">
           <button aria-label="Decrease quantity" (click)="changeQuantity(index, entry.quantity - 1)">−</button>
-          <input type="number" min="1" [ngModel]="entry.quantity" (ngModelChange)="changeQuantity(index, $event)" aria-label="Quantity">
-          <button aria-label="Increase quantity" (click)="changeQuantity(index, entry.quantity + 1)">+</button>
+          <input
+            type="number"
+            min="1"
+            [max]="entry.item.stock"
+            [ngModel]="entry.quantity"
+            (ngModelChange)="changeQuantity(index, $event)"
+            aria-label="Quantity">
+          <button
+            aria-label="Increase quantity"
+            [disabled]="entry.quantity >= entry.item.stock"
+            (click)="changeQuantity(index, entry.quantity + 1)">
+            +
+          </button>
         </div>
         <strong>{{ entry.item.price * entry.quantity | currency:'USD' }}</strong>
       </article>
@@ -35,19 +47,22 @@
     <aside class="col-lg-4">
       <div class="order-summary">
         <h2>Order summary</h2>
-        <div><span>Subtotal</span><strong>{{ totalPrice | currency:'USD' }}</strong></div>
+        <div><span>Estimated subtotal</span><strong>{{ totalPrice | currency:'USD' }}</strong></div>
         <div><span>Shipping</span><strong>Free</strong></div>
-        <div class="order-summary__total"><span>Total</span><strong>{{ totalPrice | currency:'USD' }}</strong></div>
+        <div class="order-summary__total"><span>Estimated total</span><strong>{{ totalPrice | currency:'USD' }}</strong></div>
         <button class="btn btn-dark btn-lg w-100" [disabled]="submitting" (click)="placeOrder()">
           {{ submitting ? 'Placing order…' : 'Place order' }}
         </button>
-        <p>Secure demo checkout · No payment details required</p>
+        <p>Final price and stock are validated by the Market server. No payment details are collected yet.</p>
       </div>
     </aside>
   </div>
 
-  <div class="alert alert-success" *ngIf="success">
-    <strong>Order confirmed.</strong> Your demo order was submitted successfully.
+  <div class="alert alert-success" *ngIf="confirmedOrderNo">
+    <strong>Order created.</strong>
+    Reference {{ confirmedOrderNo }} ·
+    {{ confirmedTotal | currency:confirmedCurrency }}
   </div>
+
   <div class="alert alert-danger" *ngIf="orderError">{{ orderError }}</div>
 </section>
