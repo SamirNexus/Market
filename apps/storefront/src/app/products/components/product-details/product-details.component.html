@@ -1,23 +1,30 @@
 <section class="product-details container" *ngIf="!loading && data">
-    <a routerLink="/products" class="product-details__back">← Back to products</a>
-    <div class="row align-items-center g-5">
-        <div class="col-md-5 col-sm-12">
-            <div class="product-details__image-wrap">
-              <img [src]="data.image" [alt]="data.title">
-            </div>
-        </div>
-        <div class="col-md-7 col-sm-12">
-          <span class="product-details__category">{{ data.category }}</span>
-          <h1>{{ data.title }}</h1>
-          <div class="product-details__rating">★ {{ data.rating.rate }} · {{ data.rating.count }} reviews</div>
-          <p>{{ data.description }}</p>
-          <strong class="product-details__price">{{ data.price | currency:'USD' }}</strong>
-          <div class="d-flex align-items-center gap-3 mt-4">
-            <button class="btn btn-dark btn-lg" (click)="addToCart()">Add to cart</button>
-            <span class="text-success" role="status" *ngIf="cartMessage">{{ cartMessage }}</span>
-          </div>
-        </div>
+  <a routerLink="/products" class="product-details__back">← Back to products</a>
+  <div class="row align-items-center g-5">
+    <div class="col-md-5 col-sm-12">
+      <div class="product-details__image-wrap">
+        <img [src]="data.image" [alt]="data.title">
+      </div>
     </div>
+    <div class="col-md-7 col-sm-12">
+      <span class="product-details__category">{{ data.category }}</span>
+      <h1>{{ data.title }}</h1>
+      <div class="product-details__rating">
+        {{ data.stock > 0 ? (data.stock + ' available') : 'Out of stock' }}
+      </div>
+      <p>{{ data.description }}</p>
+      <strong class="product-details__price">{{ data.price | currency:'USD' }}</strong>
+      <div class="d-flex align-items-center gap-3 mt-4">
+        <button
+          class="btn btn-dark btn-lg"
+          [disabled]="data.stock <= 0"
+          (click)="addToCart()">
+          {{ data.stock > 0 ? 'Add to cart' : 'Out of stock' }}
+        </button>
+        <span class="text-success" role="status" *ngIf="cartMessage">{{ cartMessage }}</span>
+      </div>
+    </div>
+  </div>
 </section>
 
 <div class="text-center py-5" *ngIf="loading"><app-spinner></app-spinner></div>
