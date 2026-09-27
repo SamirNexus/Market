@@ -3,27 +3,27 @@
 Market is one commerce product delivered through three coordinated applications:
 
 - **Storefront** — customer shopping experience.
-- **Admin** — staff operations dashboard.
-- **API** — shared commerce backend and business-rule boundary.
+- **Admin** — authenticated staff operations dashboard.
+- **API** — commerce business rules, persistence, identity, and integrations.
 
-That structure is intentional: commercially it is **one product**, while technically the customer UI, staff UI, and backend remain independently deployable. This keeps the system easier to secure, scale, test, and maintain than forcing everything into one front-end bundle.
+Commercially this is **one product**. Technically the customer UI, staff UI, and backend stay independently deployable so security boundaries, scaling, testing, and releases remain manageable.
 
-> Market is being upgraded from a portfolio demo into a reusable commerce product foundation. It is not yet presented as production-ready commerce software until authentication, authorization, persistent backend workflows, payments, deployment controls, and end-to-end coverage are complete.
+> Market is being productized in stages. Catalog persistence, inventory, order workflows, staff authentication, RBAC, and audit foundations are implemented. Payment processing, merchant configuration, production deployment, customer identity, and end-to-end purchase coverage are still explicit work before the product is described as production-ready.
 
 ## Applications
 
 | Application | Path | Purpose |
 | --- | --- | --- |
 | Storefront | `apps/storefront` | Customer catalog, cart, and checkout experience |
-| Admin | `apps/admin` | Staff catalog and order operations |
-| API | `apps/api` | Business rules, persistence, authentication boundary, and integrations |
+| Admin | `apps/admin` | Authenticated catalog, inventory, order, and staff operations |
+| API | `apps/api` | Business rules, PostgreSQL persistence, auth/RBAC, and integrations |
 
-### Current live demos
+### Current public demos
 
 - Storefront: https://market-two-rosy.vercel.app
 - Admin legacy deployment: https://market-admin-tau.vercel.app
 
-The current public demos still use the historical front-end deployments while the new API-backed product architecture is built and validated.
+The public demos remain on the historical front-end integrations while the owned API-backed deployment is completed. The repository code is intentionally ahead of those legacy demo deployments.
 
 ## Repository structure
 
@@ -44,66 +44,106 @@ Market/
 └── vercel.json
 ```
 
-## Product architecture
+## Current product architecture
 
 ```mermaid
 flowchart LR
   Customer[Customer] --> Storefront[Angular Storefront]
   Staff[Staff] --> Admin[Angular Admin]
+
   Storefront --> API[NestJS Commerce API]
   Admin --> API
-  API --> DB[(PostgreSQL)]
-  API --> Auth[Auth + RBAC]
-  API --> Payments[Payment Adapter]
+
+  API --> Auth[Sessions + RBAC]
+  API --> Catalog[Catalog]
+  API --> Inventory[Inventory Ledger]
+  API --> Orders[Order Workflow]
   API --> Audit[Audit Log]
+
+  Auth --> DB[(PostgreSQL)]
+  Catalog --> DB
+  Inventory --> DB
+  Orders --> DB
+  Audit --> DB
 ```
 
-The API is the source of truth for pricing, stock, order state, permissions, and other business rules. Neither browser application should be trusted to enforce privileged commerce logic.
+The API is the source of truth for pricing, stock, order state, permissions, and privileged operations. Browser applications do not own those business rules.
 
-## Backend foundation now in progress
+## Implemented backend foundations
 
-The API foundation includes:
-
-- NestJS application structure
-- versioned route prefix `/api/v1`
-- environment configuration
-- global request validation
-- controlled CORS configuration
-- Prisma database layer
-- PostgreSQL schema for products, users, orders, order items, and audit logs
-- health endpoint
-- initial product CRUD
-- soft archival instead of destructive product deletion
-- Docker Compose PostgreSQL service for local development
+- versioned NestJS API under `/api/v1`
+- PostgreSQL + Prisma migrations
+- product CRUD with soft archival
+- atomic stock decrements
+- inventory movement ledger
+- server-priced order creation
+- controlled order-state transitions
+- restocking on cancellation
+- paginated/filterable admin order queries
+- staff authentication with short-lived access tokens
+- revocable, rotating refresh sessions
+- HttpOnly refresh-token cookies
+- STAFF / ADMIN / OWNER RBAC
+- protected admin routes
+- staff account lifecycle management
+- audit events for sensitive admin mutations
+- deterministic dependencies, migrations, seed data, API tests, and CI
 
 ## Local development
 
-Install the two existing Angular applications:
-
-```bash
-npm run install:all
-```
-
-Run PostgreSQL:
+Start PostgreSQL:
 
 ```bash
 docker compose up -d postgres
 ```
 
-The API package is currently being scaffolded. Its lockfile and CI gate are added before this backend branch is merged.
+Install dependencies:
 
-## Existing quality commands
+```bash
+npm run install:all
+npm run install:api
+```
+
+Create the API environment file:
+
+```bash
+cp apps/api/.env.example apps/api/.env
+```
+
+Optionally set `OWNER_EMAIL` and a 12+ character `OWNER_PASSWORD` before seeding to bootstrap the first owner account.
+
+Prepare the API database:
+
+```bash
+npm --prefix apps/api run prisma:generate
+npm --prefix apps/api run prisma:migrate:deploy
+npm --prefix apps/api run prisma:seed
+```
+
+Run each application in its own terminal:
+
+```bash
+npm run start:api
+npm run start:storefront
+npm run start:admin
+```
+
+Use a different Angular port when running both front ends simultaneously.
+
+## Quality gates
 
 ```bash
 npm run build
 npm run test:storefront
+npm run test:admin
+npm run test:api
 ```
 
-Current suite CI validates storefront and admin builds/tests. API build, test, migration validation, and database integration become required gates as the backend foundation is completed.
+CI additionally starts PostgreSQL, applies migrations, seeds the database, validates Prisma, then tests and builds the API.
 
 ## Product status
 
-The monorepo and front-end quality baseline are complete. The current commercial-risk priority is replacing Fake Store API with owned persistence and server-side business rules.
+The project is now beyond a front-end portfolio demo: it has an owned persistence and security foundation. It is still intentionally not marketed as fully production-ready until deployment, payments, shipping/tax configuration, customer identity, observability, backups, and end-to-end flows are completed.
 
 See:
 
