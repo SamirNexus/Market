@@ -46,8 +46,12 @@ export class OrdersService {
       ...(query.from || query.to
         ? {
             createdAt: {
-              ...(query.from ? { gte: new Date(query.from) } : {}),
-              ...(query.to ? { lte: new Date(query.to) } : {}),
+              ...(query.from
+                ? { gte: this.dateBoundary(query.from, false) }
+                : {}),
+              ...(query.to
+                ? { lte: this.dateBoundary(query.to, true) }
+                : {}),
             },
           }
         : {}),
@@ -102,10 +106,13 @@ export class OrdersService {
           throw new BadRequestException('One or more products were not found');
         }
 
-        const productMap = new Map(products.map((product) => [product.id, product]));
+        const productMap = new Map(
+          products.map((product) => [product.id, product]),
+        );
 
         const subtotal = items.reduce((sum, item) => {
           const product = productMap.get(item.productId);
+
           if (!product) {
             throw new BadRequestException('Product not found');
           }
@@ -127,6 +134,7 @@ export class OrdersService {
 
         for (const item of items) {
           const product = productMap.get(item.productId);
+
           if (!product) {
             throw new BadRequestException('Product not found');
           }
@@ -169,7 +177,9 @@ export class OrdersService {
         });
 
         if (!created) {
-          throw new ConflictException('Order could not be loaded after creation');
+          throw new ConflictException(
+            'Order could not be loaded after creation',
+          );
         }
 
         return this.serialize(created);
@@ -178,7 +188,11 @@ export class OrdersService {
     );
   }
 
-  async updateStatus(id: string, target: OrderStatus, actorId: string) {
+  async updateStatus(
+    id: string,
+    target: OrderStatus,
+    actorId: string,
+  ) {
     const order = await this.prisma.order.findUnique({
       where: { id },
       include: { items: true },
@@ -194,9 +208,25 @@ export class OrdersService {
 
     this.assertTransitionAllowed(order.status, target);
 
-    if (target === OrderStatus.CANCELLED) {
-      await this.prisma.$transaction(
-        async (tx) => {
+    await this.prisma.$transaction(
+      async (tx) => {
+        const transitioned = await tx.order.updateMany({
+          where: {
+            id,
+            status: order.status,
+          },
+          data: {
+            status: target,
+          },
+        });
+
+        if (transitioned.count !== 1) {
+          throw new ConflictException(
+            'Order status changed concurrently; reload and try again',
+          );
+        }
+
+        if (target === OrderStatus.CANCELLED) {
           await this.inventory.restockForCancelledOrder(
             tx,
             order.id,
@@ -205,48 +235,22 @@ export class OrdersService {
               quantity: item.quantity,
             })),
           );
+        }
 
-          await tx.order.update({
-            where: { id },
-            data: { status: OrderStatus.CANCELLED },
-          });
-
-          await this.audit.recordWithClient(
-            tx,
-            actorId,
-            'ORDER_STATUS_CHANGED',
-            'Order',
-            id,
-            {
-              from: order.status,
-              to: OrderStatus.CANCELLED,
-            },
-          );
-        },
-        { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
-      );
-
-      return this.findOne(id);
-    }
-
-    await this.prisma.$transaction(async (tx) => {
-      await tx.order.update({
-        where: { id },
-        data: { status: target },
-      });
-
-      await this.audit.recordWithClient(
-        tx,
-        actorId,
-        'ORDER_STATUS_CHANGED',
-        'Order',
-        id,
-        {
-          from: order.status,
-          to: target,
-        },
-      );
-    });
+        await this.audit.recordWithClient(
+          tx,
+          actorId,
+          'ORDER_STATUS_CHANGED',
+          'Order',
+          id,
+          {
+            from: order.status,
+            to: target,
+          },
+        );
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+    );
 
     return this.findOne(id);
   }
@@ -291,6 +295,16 @@ export class OrdersService {
   private createOrderNumber(): string {
     const date = new Date().toISOString().slice(0, 10).replaceAll('-', '');
     return `MKT-${date}-${randomUUID().slice(0, 8).toUpperCase()}`;
+  }
+
+  private dateBoundary(value: string, endOfDay: boolean): Date {
+    const date = new Date(value);
+
+    if (endOfDay && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      date.setUTCHours(23, 59, 59, 999);
+    }
+
+    return date;
   }
 
   private serialize<T extends {
