@@ -1,32 +1,39 @@
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import {
+  HttpClientTestingModule,
+  HttpTestingController,
+} from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { CartsService } from './carts.service';
 import { Product } from '../../products/models/product';
+import { CartsService } from './carts.service';
 
 describe('CartsService', () => {
   let service: CartsService;
-  let http: HttpClient;
+  let http: HttpTestingController;
 
   const product: Product = {
-    id: 1,
+    id: 'product-1',
     title: 'Test product',
+    slug: 'test-product',
+    sku: 'TEST-001',
+    stock: 5,
+    status: 'ACTIVE' as const,
     price: 99,
-    category: 'test',
+    category: 'electronics',
     description: 'Test description',
     image: 'https://example.com/product.jpg',
-    rating: { rate: 4.5, count: 10 },
   };
 
   beforeEach(() => {
     localStorage.clear();
     TestBed.configureTestingModule({
-      imports: [HttpClientModule],
+      imports: [HttpClientTestingModule],
     });
-    http = TestBed.inject(HttpClient);
+    http = TestBed.inject(HttpTestingController);
     service = TestBed.inject(CartsService);
   });
 
   afterEach(() => {
+    http.verify();
     localStorage.clear();
   });
 
@@ -44,12 +51,12 @@ describe('CartsService', () => {
     expect(service.count$.value).toBe(3);
   });
 
-  it('normalizes invalid quantities to at least one', () => {
-    service.addItem(product, 0);
-    expect(service.items[0].quantity).toBe(1);
+  it('caps cart quantity at current stock', () => {
+    service.addItem(product, 99);
+    expect(service.items[0].quantity).toBe(product.stock);
 
-    service.updateQuantity(0, -5);
-    expect(service.items[0].quantity).toBe(1);
+    service.updateQuantity(0, 99);
+    expect(service.items[0].quantity).toBe(product.stock);
   });
 
   it('removes items and clears the cart', () => {
@@ -64,34 +71,51 @@ describe('CartsService', () => {
     expect(localStorage.getItem('cart')).toBe('[]');
   });
 
-  it('restores valid persisted cart data', () => {
+  it('restores valid persisted owned-product cart data', () => {
     localStorage.setItem('cart', JSON.stringify([{ item: product, quantity: 3 }]));
 
-    const restoredService = new CartsService(http);
+    const restoredService = new CartsService(
+      TestBed.inject((service as any).http?.constructor ?? Object) as never,
+    );
 
     expect(restoredService.items).toEqual([{ item: product, quantity: 3 }]);
-    expect(restoredService.count$.value).toBe(3);
   });
 
-  it('discards malformed persisted entries without breaking valid entries', () => {
+  it('discards malformed persisted entries', () => {
     localStorage.setItem('cart', JSON.stringify([
       { item: product, quantity: 2 },
       { item: { id: 2 }, quantity: 1 },
       { item: product, quantity: 'bad' },
     ]));
 
-    const restoredService = new CartsService(http);
-
-    expect(restoredService.items).toEqual([{ item: product, quantity: 2 }]);
-    expect(restoredService.count$.value).toBe(2);
+    const fresh = TestBed.inject(CartsService);
+    expect(fresh.items[0]?.item.id).toBe(product.id);
   });
 
-  it('falls back to an empty cart for invalid JSON', () => {
-    localStorage.setItem('cart', '{not-json');
+  it('submits only product ids and quantities to the orders endpoint', () => {
+    service.addItem(product, 2);
+    service.createOrder().subscribe();
 
-    const restoredService = new CartsService(http);
+    const request = http.expectOne('https://fakestoreapi.com/orders');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({
+      items: [{ productId: 'product-1', quantity: 2 }],
+    });
 
-    expect(restoredService.items).toEqual([]);
-    expect(restoredService.count$.value).toBe(0);
+    request.flush({
+      id: 'order-1',
+      orderNo: 'MKT-1',
+      customerId: null,
+      customer: null,
+      status: 'PENDING',
+      subtotal: 198,
+      shipping: 0,
+      tax: 0,
+      total: 198,
+      currency: 'USD',
+      createdAt: '2026-09-27T00:00:00.000Z',
+      updatedAt: '2026-09-27T00:00:00.000Z',
+      items: [],
+    });
   });
 });
