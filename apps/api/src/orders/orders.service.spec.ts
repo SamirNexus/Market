@@ -102,7 +102,6 @@ describe('OrdersService', () => {
       shippingFee: new Prisma.Decimal(0),
       freeShippingThreshold: null,
     });
-    tx.merchantSettings.findUnique.mockResolvedValue({ currency: 'EUR' });
     prisma.$transaction.mockImplementation(
       async (input: unknown) => {
         if (Array.isArray(input)) {
