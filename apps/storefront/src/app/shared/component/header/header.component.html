@@ -1,12 +1,23 @@
-
 <nav aria-label="Main navigation">
-    <div class="container">
+  <div class="container">
     <div class="content">
-        <a class="logo" routerLink="/products">MARKET</a>
-        <ul>
-            <li><a routerLink="/products" routerLinkActive="active">Shop</a></li>
-            <li><a routerLink="/cart" routerLinkActive="active">Cart <span class="cart-count">{{ cartCount$ | async }}</span></a></li>
-        </ul>
+      <a class="logo" routerLink="/products" *ngIf="settings$ | async as settings">
+        <img
+          *ngIf="settings.logoUrl"
+          [src]="settings.logoUrl"
+          [alt]="settings.storeName"
+          height="32">
+        <span *ngIf="!settings.logoUrl">{{ settings.storeName }}</span>
+      </a>
+
+      <ul>
+        <li><a routerLink="/products" routerLinkActive="active">Shop</a></li>
+        <li>
+          <a routerLink="/cart" routerLinkActive="active">
+            Cart <span class="cart-count">{{ cartCount$ | async }}</span>
+          </a>
+        </li>
+      </ul>
     </div>
-</div>
+  </div>
 </nav>
