@@ -1,10 +1,13 @@
 import {
   IsEmail,
+  IsNumber,
   IsOptional,
   IsString,
   IsUrl,
   Matches,
+  Max,
   MaxLength,
+  Min,
   MinLength,
 } from 'class-validator';
 
@@ -40,4 +43,20 @@ export class UpdateMerchantSettingsDto {
   @IsOptional()
   @Matches(/^#[0-9A-Fa-f]{6}$/)
   primaryColor?: string;
+
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 4 })
+  @Min(0)
+  @Max(1)
+  taxRate?: number;
+
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  shippingFee?: number;
+
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  freeShippingThreshold?: number | null;
 }
