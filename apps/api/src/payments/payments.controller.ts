@@ -29,7 +29,7 @@ export class PaymentsController {
     @Param('orderId') orderId: string,
     @Body() input: CreatePaymentDto,
   ) {
-    return this.payments.createForOrder(orderId, input.provider);
+    return this.payments.createForOrder(orderId);
   }
 
   @Roles(UserRole.STAFF, UserRole.ADMIN, UserRole.OWNER)
