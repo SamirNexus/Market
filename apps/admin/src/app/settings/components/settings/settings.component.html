@@ -94,6 +94,47 @@
         </div>
       </div>
 
+      <div class="col-md-4 mb-3">
+        <label for="settings-tax-rate">Tax rate (%)</label>
+        <input
+          id="settings-tax-rate"
+          type="number"
+          min="0"
+          max="100"
+          step="0.01"
+          class="form-control"
+          formControlName="taxRatePercent">
+        <small class="form-text text-muted">
+          Applied server-side to new order subtotals.
+        </small>
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <label for="settings-shipping-fee">Standard shipping fee</label>
+        <input
+          id="settings-shipping-fee"
+          type="number"
+          min="0"
+          step="0.01"
+          class="form-control"
+          formControlName="shippingFee">
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <label for="settings-free-shipping">Free shipping threshold</label>
+        <input
+          id="settings-free-shipping"
+          type="number"
+          min="0"
+          step="0.01"
+          class="form-control"
+          formControlName="freeShippingThreshold"
+          placeholder="No threshold">
+        <small class="form-text text-muted">
+          Leave empty to always use the standard shipping fee.
+        </small>
+      </div>
+
       <div class="col-12 mb-3">
         <label for="settings-logo-url">Logo URL</label>
         <input
