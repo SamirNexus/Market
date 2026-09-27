@@ -54,7 +54,8 @@ The goal is one reusable, configurable commerce product for small and medium mer
 - [x] Currency and locale configuration
 - [x] Tax configuration (merchant rate, server-authoritative calculation)
 - [x] Shipping configuration foundation (standard fee + free-shipping threshold)
-- [ ] Payment-provider adapter
+- [x] Payment-provider adapter foundation (provider-neutral persistence + manual adapter)
+- [ ] External payment gateway integration and verified webhook lifecycle
 - [ ] Email/notification adapter
 - [x] Merchant settings with ADMIN/OWNER authorization and audit logging
 - [ ] Media storage adapter
