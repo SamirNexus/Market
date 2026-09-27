@@ -1,0 +1,4 @@
+ALTER TABLE "MerchantSettings"
+ADD COLUMN "taxRate" DECIMAL(5,4) NOT NULL DEFAULT 0,
+ADD COLUMN "shippingFee" DECIMAL(12,2) NOT NULL DEFAULT 0,
+ADD COLUMN "freeShippingThreshold" DECIMAL(12,2);
