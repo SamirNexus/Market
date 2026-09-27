@@ -22,7 +22,7 @@ export class ProductsService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return products.map((product) => this.toResponse(product));
+    return products.map((product) => this.toPublicResponse(product));
   }
 
   async findPublishedCategories(): Promise<string[]> {
@@ -52,7 +52,7 @@ export class ProductsService {
       throw new NotFoundException('Product not found');
     }
 
-    return this.toResponse(product);
+    return this.toPublicResponse(product);
   }
 
   async findAllForAdmin() {
@@ -188,6 +188,21 @@ export class ProductsService {
     });
 
     return this.toResponse(product);
+  }
+
+  private toPublicResponse(product: Product) {
+    return {
+      id: product.id,
+      title: product.title,
+      slug: product.slug,
+      sku: product.sku,
+      price: Number(product.price),
+      stock: product.stock,
+      description: product.description,
+      category: product.category,
+      image: product.image ?? '',
+      status: ProductStatus.ACTIVE,
+    } as const;
   }
 
   private toResponse(product: Product) {
