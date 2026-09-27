@@ -23,7 +23,7 @@ Commercially this is **one product**. Technically the customer UI, staff UI, and
 - Storefront: https://market-two-rosy.vercel.app
 - Admin legacy deployment: https://market-admin-tau.vercel.app
 
-The public demos remain on the historical front-end integrations while the owned API-backed deployment is completed. The repository code is intentionally ahead of those legacy demo deployments.
+The public demos remain historical deployments while the owned API-backed production cutover is prepared. Development storefront/admin flows now use the owned API, and the repository includes container/runtime deployment configuration without silently repointing the existing public demos.
 
 ## Repository structure
 
@@ -88,6 +88,9 @@ The API is the source of truth for pricing, stock, order state, permissions, and
 - staff account lifecycle management
 - audit events for sensitive admin mutations
 - deterministic dependencies, migrations, seed data, API tests, and CI
+- runtime-configurable frontend API endpoints
+- production Docker images for storefront, admin, API, and migrations
+- production Compose model with health checks and migration gating
 
 ## Local development
 
@@ -149,6 +152,7 @@ See:
 
 - `docs/ARCHITECTURE.md`
 - `docs/PRODUCT_ROADMAP.md`
+- `docs/DEPLOYMENT.md`
 
 ## Author
 

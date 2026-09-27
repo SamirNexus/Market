@@ -96,3 +96,17 @@ If traffic or organizational scale later requires service extraction, catalog, i
 - order status changes follow explicit transitions
 - secrets never live in browser bundles or source control
 - production claims must match implemented behavior
+
+
+## Deployment boundary
+
+Production artifacts are containerized independently while remaining one system:
+
+- storefront and admin are immutable static builds served by Nginx
+- `/api/v1` can be same-origin proxied to the API
+- frontend API URLs can be injected at runtime without rebuilding Angular
+- API migrations run as a separate one-shot deployment task before API rollout
+- container health checks cover API and frontend availability
+- production Compose requires explicit secrets and exact browser origins
+
+See `docs/DEPLOYMENT.md` for the deployment and recovery runbook.

@@ -29,7 +29,7 @@ The goal is one reusable, configurable commerce product for small and medium mer
 - [x] Connect admin development catalog flow to owned API
 - [x] Add atomic inventory rules and movement history
 - [ ] Switch deployed admin from legacy demo API to owned API
-- [ ] Connect storefront catalog reads to owned API
+- [x] Connect storefront development catalog/order flows to owned API
 
 **Exit criterion:** catalog writes and inventory rules are owned by Market; final deployed cutover remains.
 
@@ -64,8 +64,10 @@ The goal is one reusable, configurable commerce product for small and medium mer
 
 ## Phase 5 — Commercial readiness
 
+- [x] Containerized deployment foundation and runtime frontend configuration
+- [x] Deployment runbook, migration gating, and backup baseline
 - [ ] Production API/database deployment
-- [ ] Storefront/admin deployment cutover
+- [ ] Storefront/admin public deployment cutover
 - [ ] End-to-end checkout and admin-order tests
 - [ ] Accessibility review
 - [ ] Security review and rate limiting
