@@ -9,11 +9,7 @@ services:
     volumes:
       - market_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "pg_isready -U ${POSTGRES_USER:-market} -d ${POSTGRES_DB:-market}"
-        ]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-market} -d ${POSTGRES_DB:-market}"]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -45,6 +41,11 @@ services:
       JWT_ACCESS_TTL_SECONDS: ${JWT_ACCESS_TTL_SECONDS:-900}
       REFRESH_TOKEN_DAYS: ${REFRESH_TOKEN_DAYS:-30}
       REFRESH_COOKIE_SAME_SITE: ${REFRESH_COOKIE_SAME_SITE:-lax}
+      PAYMENT_PROVIDER: ${PAYMENT_PROVIDER:-manual}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      PAYMENT_SUCCESS_URL: ${PAYMENT_SUCCESS_URL:-}
+      PAYMENT_CANCEL_URL: ${PAYMENT_CANCEL_URL:-}
     depends_on:
       migrate:
         condition: service_completed_successfully
