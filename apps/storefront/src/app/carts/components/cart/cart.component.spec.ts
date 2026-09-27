@@ -21,7 +21,25 @@ describe('CartComponent', () => {
   let cartsService: jasmine.SpyObj<CartsService>;
   let cart$: BehaviorSubject<CartItem[]>;
   let component: CartComponent;
-  const settings = { currency$: of('EUR') };
+  const merchantSettings = {
+    id: 'default' as const,
+    storeName: 'Market',
+    supportEmail: null,
+    currency: 'EUR',
+    locale: 'en-US',
+    logoUrl: null,
+    primaryColor: '#111827',
+    taxRate: 0.1,
+    shippingFee: 5,
+    freeShippingThreshold: 250,
+    createdAt: '',
+    updatedAt: '',
+  };
+  const settings = {
+    currency$: of('EUR'),
+    settings$: of(merchantSettings),
+    currentSettings: merchantSettings,
+  };
 
   beforeEach(() => {
     cart$ = new BehaviorSubject<CartItem[]>(cart);
@@ -52,6 +70,12 @@ describe('CartComponent', () => {
 
   it('calculates the cart total from price and quantity', () => {
     expect(component.totalPrice).toBe(198);
+  });
+
+  it('calculates configured tax and shipping estimates', () => {
+    expect(component.estimatedTax).toBe(19.8);
+    expect(component.estimatedShipping).toBe(5);
+    expect(component.estimatedTotal).toBe(222.8);
   });
 
   it('delegates cart mutations to the service', () => {
