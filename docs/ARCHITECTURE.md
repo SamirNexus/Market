@@ -126,3 +126,10 @@ Changing the currency code does **not** convert existing numeric catalog prices.
 Payments use a provider-neutral domain boundary rather than coupling orders to a gateway SDK. A durable Payment record snapshots the server-calculated order amount and currency, tracks provider identifiers and lifecycle status, and can expose a provider checkout URL when an adapter requires customer action.
 
 The initial `manual` adapter deliberately performs no external charge. It proves the adapter and persistence boundary without claiming payment processing. A production gateway adapter must verify provider webhooks server-side before marking a payment successful; browser redirects are not authoritative payment confirmation.
+
+
+### External gateway lifecycle
+
+Market now includes a Stripe Checkout adapter behind the provider boundary. Checkout amounts are created from the persisted server order total; the browser does not supply a payable amount. Stripe webhook requests retain their raw body, are verified with the configured signing secret and a five-minute timestamp tolerance, and only verified lifecycle events may change persisted payment state.
+
+Webhook handling is idempotent at the payment-state boundary: repeated events that resolve to the same state are no-ops, and conditional updates prevent concurrent handlers from applying the same transition twice. A verified successful payment may advance a still-PENDING order to CONFIRMED. Gateway credentials remain deployment secrets and are intentionally not committed.
