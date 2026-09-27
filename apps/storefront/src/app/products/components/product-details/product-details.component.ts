@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { ProductsService } from '../../services/products.service';
-import { Product } from '../../models/product';
 import { CartsService } from '../../../carts/services/carts.service';
+import { Product } from '../../models/product';
+import { ProductsService } from '../../services/products.service';
 
 @Component({
   selector: 'app-product-details',
@@ -10,7 +10,7 @@ import { CartsService } from '../../../carts/services/carts.service';
   styleUrls: ['./product-details.component.scss']
 })
 export class ProductDetailsComponent implements OnInit {
-  id = 0;
+  id = '';
   data?: Product;
   loading = true;
   errorMessage = '';
@@ -24,13 +24,13 @@ export class ProductDetailsComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
-      this.id = Number(params.get('id'));
+      this.id = params.get('id')?.trim() ?? '';
       this.getProduct();
     });
   }
 
   getProduct(): void {
-    if (!Number.isFinite(this.id) || this.id <= 0) {
+    if (!this.id) {
       this.loading = false;
       this.data = undefined;
       this.errorMessage = 'This product could not be loaded. Please try again.';
@@ -53,7 +53,7 @@ export class ProductDetailsComponent implements OnInit {
   }
 
   addToCart(): void {
-    if (!this.data) return;
+    if (!this.data || this.data.stock <= 0) return;
     this.cartsService.addItem(this.data, 1);
     this.cartMessage = 'Added to your cart.';
   }

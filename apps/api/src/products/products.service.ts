@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Product } from '@prisma/client';
+import { Product, ProductStatus } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -12,7 +12,50 @@ export class ProductsService {
     private readonly audit: AuditService,
   ) {}
 
-  async findAll() {
+  async findPublished(category?: string) {
+    const products = await this.prisma.product.findMany({
+      where: {
+        isActive: true,
+        status: ProductStatus.ACTIVE,
+        ...(category ? { category } : {}),
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return products.map((product) => this.toPublicResponse(product));
+  }
+
+  async findPublishedCategories(): Promise<string[]> {
+    const categories = await this.prisma.product.findMany({
+      where: {
+        isActive: true,
+        status: ProductStatus.ACTIVE,
+      },
+      select: { category: true },
+      distinct: ['category'],
+      orderBy: { category: 'asc' },
+    });
+
+    return categories.map(({ category }) => category);
+  }
+
+  async findPublishedOne(id: string) {
+    const product = await this.prisma.product.findFirst({
+      where: {
+        id,
+        isActive: true,
+        status: ProductStatus.ACTIVE,
+      },
+    });
+
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    return this.toPublicResponse(product);
+  }
+
+  async findAllForAdmin() {
     const products = await this.prisma.product.findMany({
       where: { isActive: true },
       orderBy: { createdAt: 'desc' },
@@ -21,7 +64,7 @@ export class ProductsService {
     return products.map((product) => this.toResponse(product));
   }
 
-  async findCategories(): Promise<string[]> {
+  async findAdminCategories(): Promise<string[]> {
     const categories = await this.prisma.product.findMany({
       where: { isActive: true },
       select: { category: true },
@@ -32,7 +75,7 @@ export class ProductsService {
     return categories.map(({ category }) => category);
   }
 
-  async findOne(id: string) {
+  async findOneForAdmin(id: string) {
     const product = await this.prisma.product.findUnique({ where: { id } });
 
     if (!product) {
@@ -126,7 +169,7 @@ export class ProductsService {
         where: { id },
         data: {
           isActive: false,
-          status: 'ARCHIVED',
+          status: ProductStatus.ARCHIVED,
         },
       });
 
@@ -145,6 +188,21 @@ export class ProductsService {
     });
 
     return this.toResponse(product);
+  }
+
+  private toPublicResponse(product: Product) {
+    return {
+      id: product.id,
+      title: product.title,
+      slug: product.slug,
+      sku: product.sku,
+      price: Number(product.price),
+      stock: product.stock,
+      description: product.description,
+      category: product.category,
+      image: product.image ?? '',
+      status: ProductStatus.ACTIVE,
+    } as const;
   }
 
   private toResponse(product: Product) {

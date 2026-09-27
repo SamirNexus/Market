@@ -1,5 +1,5 @@
 import { NotFoundException } from '@nestjs/common';
-import { ProductStatus } from '@prisma/client';
+import { Prisma, ProductStatus } from '@prisma/client';
 import { ProductsService } from './products.service';
 
 describe('ProductsService', () => {
@@ -8,7 +8,7 @@ describe('ProductsService', () => {
     title: 'Camera',
     slug: 'camera',
     description: 'Indoor camera',
-    price: 100,
+    price: new Prisma.Decimal(100),
     category: 'electronics',
     image: 'https://example.com/camera.jpg',
     sku: 'CAM-001',
@@ -34,6 +34,7 @@ describe('ProductsService', () => {
     product: {
       findMany: jest.fn(),
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
     },
     $transaction: jest.fn(),
   };
@@ -52,34 +53,93 @@ describe('ProductsService', () => {
     service = new ProductsService(prisma as never, audit as never);
   });
 
-  it('returns active products ordered newest first', async () => {
+  it('returns only published products to the storefront', async () => {
     prisma.product.findMany.mockResolvedValue([product]);
 
-    await expect(service.findAll()).resolves.toEqual([product]);
+    await expect(service.findPublished()).resolves.toEqual([
+      expect.objectContaining({
+        id: product.id,
+        price: 100,
+        status: ProductStatus.ACTIVE,
+      }),
+    ]);
+
     expect(prisma.product.findMany).toHaveBeenCalledWith({
-      where: { isActive: true },
+      where: {
+        isActive: true,
+        status: ProductStatus.ACTIVE,
+      },
       orderBy: { createdAt: 'desc' },
     });
   });
 
-  it('returns distinct active categories', async () => {
+  it('filters the public catalog by category on the server', async () => {
+    prisma.product.findMany.mockResolvedValue([product]);
+
+    await service.findPublished('electronics');
+
+    expect(prisma.product.findMany).toHaveBeenCalledWith({
+      where: {
+        isActive: true,
+        status: ProductStatus.ACTIVE,
+        category: 'electronics',
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  });
+
+  it('returns distinct published categories', async () => {
     prisma.product.findMany.mockResolvedValue([
       { category: 'electronics' },
       { category: 'jewelery' },
     ]);
 
-    await expect(service.findCategories()).resolves.toEqual([
+    await expect(service.findPublishedCategories()).resolves.toEqual([
       'electronics',
       'jewelery',
     ]);
+
+    expect(prisma.product.findMany).toHaveBeenCalledWith({
+      where: {
+        isActive: true,
+        status: ProductStatus.ACTIVE,
+      },
+      select: { category: true },
+      distinct: ['category'],
+      orderBy: { category: 'asc' },
+    });
   });
 
-  it('throws when a product does not exist', async () => {
-    prisma.product.findUnique.mockResolvedValue(null);
+  it('does not expose draft or archived product details publicly', async () => {
+    prisma.product.findFirst.mockResolvedValue(null);
 
-    await expect(service.findOne('missing')).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(
+      service.findPublishedOne('missing-or-unpublished'),
+    ).rejects.toBeInstanceOf(NotFoundException);
+
+    expect(prisma.product.findFirst).toHaveBeenCalledWith({
+      where: {
+        id: 'missing-or-unpublished',
+        isActive: true,
+        status: ProductStatus.ACTIVE,
+      },
+    });
+  });
+
+  it('returns active non-archived products to the admin catalog', async () => {
+    prisma.product.findMany.mockResolvedValue([product]);
+
+    await expect(service.findAllForAdmin()).resolves.toEqual([
+      {
+        ...product,
+        price: 100,
+      },
+    ]);
+
+    expect(prisma.product.findMany).toHaveBeenCalledWith({
+      where: { isActive: true },
+      orderBy: { createdAt: 'desc' },
+    });
   });
 
   it('creates a product and audit event in one transaction', async () => {
@@ -127,7 +187,7 @@ describe('ProductsService', () => {
       where: { id: product.id },
       data: {
         isActive: false,
-        status: 'ARCHIVED',
+        status: ProductStatus.ARCHIVED,
       },
     });
     expect(audit.recordWithClient).toHaveBeenCalledWith(

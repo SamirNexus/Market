@@ -5,19 +5,31 @@
     <div class="product-card__body">
       <h2>{{ data.title }}</h2>
       <p>{{ data.description }}</p>
-      <div class="product-card__rating" aria-label="Product rating">
-        <span>★ {{ data.rating.rate }}</span>
-        <span>{{ data.rating.count }} reviews</span>
+      <div class="product-card__rating" aria-label="Inventory status">
+        <span>{{ data.stock > 0 ? 'In stock' : 'Out of stock' }}</span>
+        <span *ngIf="data.stock > 0">{{ data.stock }} available</span>
       </div>
     </div>
   </a>
 
   <div class="product-card__footer">
     <strong>{{ data.price | currency:'USD' }}</strong>
-    <button class="btn btn-dark" *ngIf="!selectingQuantity" (click)="selectingQuantity = true">Add to cart</button>
+    <button
+      class="btn btn-dark"
+      *ngIf="!selectingQuantity"
+      [disabled]="data.stock <= 0"
+      (click)="selectingQuantity = true">
+      {{ data.stock > 0 ? 'Add to cart' : 'Out of stock' }}
+    </button>
     <div class="product-card__quantity" *ngIf="selectingQuantity">
-      <input type="number" class="form-control" min="1" aria-label="Quantity" [(ngModel)]="amount">
-      <button class="btn btn-dark" (click)="add()">Add</button>
+      <input
+        type="number"
+        class="form-control"
+        min="1"
+        [max]="data.stock"
+        aria-label="Quantity"
+        [(ngModel)]="amount">
+      <button class="btn btn-dark" [disabled]="data.stock <= 0" (click)="add()">Add</button>
     </div>
   </div>
 </article>

@@ -6,7 +6,6 @@ import { Product } from '../../models/product';
   templateUrl: './product.component.html',
   styleUrls: ['./product.component.scss']
 })
-
 export class ProductComponent {
   @Input() data!: Product;
   @Output() item = new EventEmitter<{ item: Product; quantity: number }>();
@@ -15,7 +14,14 @@ export class ProductComponent {
   amount = 1;
 
   add(): void {
-    this.item.emit({ item: this.data, quantity: Math.max(1, this.amount) });
+    if (this.data.stock <= 0) return;
+
+    const quantity = Math.min(
+      Math.max(1, Math.floor(Number(this.amount) || 1)),
+      this.data.stock,
+    );
+
+    this.item.emit({ item: this.data, quantity });
     this.amount = 1;
     this.selectingQuantity = false;
   }

@@ -1,17 +1,20 @@
 import { BehaviorSubject, of, throwError } from 'rxjs';
-import { CartComponent } from './cart.component';
-import { CartsService } from '../../services/carts.service';
 import { CartItem, Product } from '../../../products/models/product';
+import { CartsService } from '../../services/carts.service';
+import { CartComponent } from './cart.component';
 
 describe('CartComponent', () => {
   const product: Product = {
-    id: 1,
+    id: 'product-1',
     title: 'Test product',
-    price: 25,
-    category: 'test',
+    slug: 'test-product',
+    sku: 'TEST-001',
+    stock: 5,
+    status: 'ACTIVE' as const,
+    price: 99,
+    category: 'electronics',
     description: 'Test description',
-    image: 'product.jpg',
-    rating: { rate: 4, count: 5 },
+    image: 'https://example.com/product.jpg',
   };
   const cart: CartItem[] = [{ item: product, quantity: 2 }];
 
@@ -26,14 +29,28 @@ describe('CartComponent', () => {
       ['updateQuantity', 'removeItem', 'clear', 'createOrder'],
       { cart$: cart$.asObservable() },
     );
-    cartsService.createOrder.and.returnValue(of({}));
+    cartsService.createOrder.and.returnValue(of({
+      id: 'order-1',
+      orderNo: 'MKT-1',
+      customerId: null,
+      customer: null,
+      status: 'PENDING',
+      subtotal: 198,
+      shipping: 0,
+      tax: 0,
+      total: 198,
+      currency: 'USD',
+      createdAt: '2026-09-27T00:00:00.000Z',
+      updatedAt: '2026-09-27T00:00:00.000Z',
+      items: [],
+    }));
 
     component = new CartComponent(cartsService);
     component.ngOnInit();
   });
 
   it('calculates the cart total from price and quantity', () => {
-    expect(component.totalPrice).toBe(50);
+    expect(component.totalPrice).toBe(198);
   });
 
   it('delegates cart mutations to the service', () => {
@@ -46,24 +63,27 @@ describe('CartComponent', () => {
     expect(cartsService.clear).toHaveBeenCalled();
   });
 
-  it('submits a demo order and clears the cart on success', () => {
+  it('submits an owned order and stores the server confirmation', () => {
     component.placeOrder();
 
-    expect(cartsService.createOrder).toHaveBeenCalled();
+    expect(cartsService.createOrder).toHaveBeenCalledWith();
     expect(cartsService.clear).toHaveBeenCalled();
-    expect(component.success).toBeTrue();
+    expect(component.confirmedOrderNo).toBe('MKT-1');
+    expect(component.confirmedTotal).toBe(198);
     expect(component.submitting).toBeFalse();
   });
 
   it('surfaces order submission errors', () => {
     cartsService.createOrder.and.returnValue(
-      throwError(() => new Error('order failure')),
+      throwError(() => ({
+        error: { message: 'Insufficient stock for Test product' },
+      })),
     );
 
     component.placeOrder();
 
-    expect(component.success).toBeFalse();
+    expect(component.confirmedOrderNo).toBe('');
     expect(component.submitting).toBeFalse();
-    expect(component.orderError).toContain('could not be placed');
+    expect(component.orderError).toContain('Insufficient stock');
   });
 });

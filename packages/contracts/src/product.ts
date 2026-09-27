@@ -25,9 +25,12 @@ export interface Product extends ProductBase {
 }
 
 export interface StorefrontProduct extends Omit<ProductBase, 'id' | 'image'> {
-  id: number;
+  id: string;
   image: string;
-  rating: ProductRating;
+  slug: string;
+  sku: string;
+  stock: number;
+  status: 'ACTIVE';
 }
 
 export type ProductInput = Omit<ProductBase, 'id'>;
