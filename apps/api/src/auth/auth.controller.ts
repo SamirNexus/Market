@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   Post,
   Req,
@@ -43,6 +44,7 @@ export class AuthController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
+    this.assertTrustedOrigin(request);
     const refreshToken = this.readCookie(request, REFRESH_COOKIE);
 
     if (!refreshToken) {
@@ -62,6 +64,7 @@ export class AuthController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
+    this.assertTrustedOrigin(request);
     const refreshToken = this.readCookie(request, REFRESH_COOKIE);
 
     if (refreshToken) {
@@ -110,6 +113,24 @@ export class AuthController {
   private refreshTokenMaxAgeMs(): number {
     const days = this.config.get<number>('REFRESH_TOKEN_DAYS', 30);
     return days * 24 * 60 * 60 * 1000;
+  }
+
+  private assertTrustedOrigin(request: Request): void {
+    const origin = request.headers.origin;
+
+    if (!origin) {
+      return;
+    }
+
+    const allowedOrigins = this.config
+      .get<string>('CORS_ORIGINS', '')
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean);
+
+    if (!allowedOrigins.includes(origin)) {
+      throw new ForbiddenException('Untrusted request origin');
+    }
   }
 
   private readCookie(request: Request, name: string): string | null {
