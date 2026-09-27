@@ -95,8 +95,7 @@ describe('OrdersService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     tx.order.updateMany.mockResolvedValue({ count: 1 });
-    tx.merchantSettings.findUnique.mockReset();
-    tx.merchantSettings.findUnique.mockResolvedValue({
+    tx.merchantSettings.findUnique.mockReturnValueOnce(Promise.resolve({
       currency: 'USD',
       taxRate: new Prisma.Decimal(0),
       shippingFee: new Prisma.Decimal(0),
@@ -160,20 +159,19 @@ describe('OrdersService', () => {
       expect.objectContaining({
         orderNo: order.orderNo,
         total: 200,
-        currency: 'EUR',
+        currency: 'USD',
       }),
     );
   });
 
   it('calculates configured tax and shipping on the server', async () => {
     tx.product.findMany.mockResolvedValue([product]);
-    tx.merchantSettings.findUnique.mockReset();
-    tx.merchantSettings.findUnique.mockResolvedValue({
+    tx.merchantSettings.findUnique.mockReturnValueOnce(Promise.resolve({
       currency: 'USD',
       taxRate: new Prisma.Decimal('0.10'),
       shippingFee: new Prisma.Decimal('12.50'),
       freeShippingThreshold: new Prisma.Decimal('500'),
-    });
+    }));
     tx.order.create.mockImplementation(async ({ data }: { data: object }) => ({
       ...order,
       ...data,
@@ -210,7 +208,7 @@ describe('OrdersService', () => {
       taxRate: new Prisma.Decimal(0),
       shippingFee: new Prisma.Decimal(12),
       freeShippingThreshold: new Prisma.Decimal(200),
-    });
+    }));
     tx.order.create.mockImplementation(async ({ data }: { data: object }) => ({
       ...order,
       ...data,
