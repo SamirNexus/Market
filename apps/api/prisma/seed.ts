@@ -95,8 +95,23 @@ async function seedProducts(): Promise<void> {
   }
 }
 
+async function seedMerchantSettings(): Promise<void> {
+  await prisma.merchantSettings.upsert({
+    where: { id: 'default' },
+    update: {},
+    create: {
+      id: 'default',
+      storeName: 'Market',
+      currency: 'USD',
+      locale: 'en-US',
+      primaryColor: '#111827',
+    },
+  });
+}
+
 async function main(): Promise<void> {
   await seedProducts();
+  await seedMerchantSettings();
   await seedOwner();
 }
 
