@@ -61,6 +61,9 @@ jobs:
       DATABASE_URL: postgresql://market:market@localhost:5432/market?schema=public
       CORS_ORIGINS: http://localhost:4200,http://localhost:4201
       PORT: 3000
+      JWT_ACCESS_SECRET: ci-only-secret-change-before-deployment-123456789
+      JWT_ACCESS_TTL_SECONDS: 900
+      REFRESH_TOKEN_DAYS: 30
 
     steps:
       - name: Checkout
@@ -73,7 +76,6 @@ jobs:
 
       - name: Install API dependencies
         run: npm ci --prefix apps/api --no-audit --no-fund
-
 
       - name: Generate Prisma client
         run: npm --prefix apps/api run prisma:generate
