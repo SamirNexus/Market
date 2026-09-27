@@ -106,7 +106,7 @@ describe('CartComponent', () => {
     component.placeOrder();
 
     expect(cartsService.createOrder).toHaveBeenCalledWith();
-    expect(cartsService.createPayment).toHaveBeenCalledWith('order-1', 'manual');
+    expect(cartsService.createPayment).toHaveBeenCalledWith('order-1');
     expect(cartsService.clear).toHaveBeenCalled();
     expect(component.confirmedOrderNo).toBe('MKT-1');
     expect(component.confirmedTotal).toBe(198);
