@@ -6,6 +6,7 @@ COPY apps/admin/package.json apps/admin/package-lock.json ./apps/admin/
 RUN npm ci --prefix apps/admin --no-audit --no-fund
 
 COPY packages/contracts ./packages/contracts
+COPY scripts ./scripts
 COPY apps/admin ./apps/admin
 
 RUN npm --prefix apps/admin run build
