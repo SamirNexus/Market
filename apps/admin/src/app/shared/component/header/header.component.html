@@ -6,6 +6,9 @@
       <ul>
         <li><a routerLink="/products" routerLinkActive="active">Products</a></li>
         <li><a routerLink="/orders" routerLinkActive="active">Orders</a></li>
+        <li *ngIf="user.role !== 'STAFF'">
+          <a routerLink="/settings" routerLinkActive="active">Settings</a>
+        </li>
       </ul>
 
       <div class="d-flex align-items-center">
