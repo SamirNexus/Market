@@ -100,7 +100,7 @@ describe('OrdersService', () => {
       taxRate: new Prisma.Decimal(0),
       shippingFee: new Prisma.Decimal(0),
       freeShippingThreshold: null,
-    });
+    }));
     prisma.$transaction.mockImplementation(
       async (input: unknown) => {
         if (Array.isArray(input)) {
