@@ -348,7 +348,7 @@ export class OrdersService {
     tax: Prisma.Decimal;
     total: Prisma.Decimal;
     items: Array<{ unitPrice: Prisma.Decimal }>;
-    payments: Array<{ amount: Prisma.Decimal }>;
+    payments?: Array<{ amount: Prisma.Decimal }>;
   }>(order: T) {
     return {
       ...order,
@@ -360,10 +360,14 @@ export class OrdersService {
         ...item,
         unitPrice: Number(item.unitPrice),
       })),
-      payments: order.payments.map((payment) => ({
-        ...payment,
-        amount: Number(payment.amount),
-      })),
+      ...(order.payments
+        ? {
+            payments: order.payments.map((payment) => ({
+              ...payment,
+              amount: Number(payment.amount),
+            })),
+          }
+        : {}),
     };
   }
 }
