@@ -17,6 +17,7 @@ describe('ProductsService', () => {
     description: 'Test product',
     category: 'electronics',
     image: 'https://example.com/camera.jpg',
+    status: 'ACTIVE',
   };
 
   const payload: AdminProductInput = {
@@ -40,18 +41,18 @@ describe('ProductsService', () => {
 
   afterEach(() => http.verify());
 
-  it('loads the product catalog', () => {
+  it('loads the protected admin product catalog', () => {
     service.getAllProducts().subscribe((products) => expect(products).toEqual([product]));
 
-    const request = http.expectOne('https://fakestoreapi.com/products');
+    const request = http.expectOne('https://fakestoreapi.com/admin/products');
     expect(request.request.method).toBe('GET');
     request.flush([product]);
   });
 
-  it('loads categories', () => {
+  it('loads admin categories', () => {
     service.getAllCategories().subscribe((categories) => expect(categories).toEqual(['electronics']));
 
-    const request = http.expectOne('https://fakestoreapi.com/products/categories');
+    const request = http.expectOne('https://fakestoreapi.com/admin/products/categories');
     expect(request.request.method).toBe('GET');
     request.flush(['electronics']);
   });
@@ -59,7 +60,7 @@ describe('ProductsService', () => {
   it('creates a product with POST', () => {
     service.createProduct(payload).subscribe();
 
-    const request = http.expectOne('https://fakestoreapi.com/products');
+    const request = http.expectOne('https://fakestoreapi.com/admin/products');
     expect(request.request.method).toBe('POST');
     expect(request.request.body).toEqual(payload);
     request.flush(product);
@@ -68,7 +69,7 @@ describe('ProductsService', () => {
   it('updates string product ids with PUT', () => {
     service.updateProduct('product-1', payload).subscribe();
 
-    const request = http.expectOne('https://fakestoreapi.com/products/product-1');
+    const request = http.expectOne('https://fakestoreapi.com/admin/products/product-1');
     expect(request.request.method).toBe('PUT');
     expect(request.request.body).toEqual(payload);
     request.flush(product);
@@ -77,7 +78,7 @@ describe('ProductsService', () => {
   it('archives a product through DELETE', () => {
     service.deleteProduct('product-1').subscribe();
 
-    const request = http.expectOne('https://fakestoreapi.com/products/product-1');
+    const request = http.expectOne('https://fakestoreapi.com/admin/products/product-1');
     expect(request.request.method).toBe('DELETE');
     request.flush({ ...product, status: 'ARCHIVED' });
   });
